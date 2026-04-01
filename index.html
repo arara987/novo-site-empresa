@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Belfort Engenharia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5"/><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="8.5" x2="22" y2="8.5"/><line x1="2" y1="15.5" x2="22" y2="15.5"/></svg>
+      </div>
+      <div class="sb-logo-text">
+        <strong>BELFORT</strong>
+        <span>ENGENHARIA</span>
+      </div>
+    </div>
+
+    <div class="sb-section-label">Gestão</div>
+    <nav class="sb-nav">
+      <button class="sb-item active" data-page="epi">
+        <span class="sb-item-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </span>
+        <span class="sb-item-label">Ficha de EPI</span>
+        <span class="sb-item-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </span>
+      </button>
+      <button class="sb-item" data-page="clientes">
+        <span class="sb-item-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </span>
+        <span class="sb-item-label">Ficha de Clientes</span>
+        <span class="sb-item-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </span>
+      </button>
+      <button class="sb-item" data-page="obras">
+        <span class="sb-item-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+        </span>
+        <span class="sb-item-label">Obras</span>
+        <span class="sb-item-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </span>
+      </button>
+    </nav>
+
+    <div class="sb-section-label">Arquivos</div>
+    <nav class="sb-nav">
+      <button class="sb-item" data-page="documentos">
+        <span class="sb-item-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </span>
+        <span class="sb-item-label">Documentos</span>
+        <span class="sb-item-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </span>
+      </button>
+    </nav>
+
+    <div class="sb-section-label">Sistema</div>
+    <nav class="sb-nav">
+      <button class="sb-item" data-page="notificacoes">
+        <span class="sb-item-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        </span>
+        <span class="sb-item-label">Notificações</span>
+        <span class="sb-notif-badge">3</span>
+      </button>
+    </nav>
+
+    <div class="sb-user">
+      <div class="sb-avatar">AD</div>
+      <div class="sb-user-info">
+        <span class="sb-user-name">Administrador</span>
+        <span class="sb-user-role">Acesso total</span>
+      </div>
+      <button class="sb-logout" title="Sair">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <header class="topbar">
+      <div class="topbar-breadcrumb">
+        <span class="tb-root">Belfort</span>
+        <svg class="tb-sep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        <span class="tb-current" id="tb-current">Ficha de EPI</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="tb-icon-btn" data-page="notificacoes" id="tb-notif-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <span class="tb-badge">3</span>
+        </button>
+        <div class="tb-divider"></div>
+        <div class="tb-avatar">AD</div>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <section class="page active" id="page-epi">
+        <div class="page-hero">
+          <div class="page-hero-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div class="page-hero-text">
+            <h1>Ficha de EPI</h1>
+            <p>Equipamentos de Proteção Individual por colaborador</p>
+          </div>
+          <div class="page-hero-badge">Segurança do Trabalho</div>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-card highlight">
+            <div class="stat-top">
+              <span class="stat-label">EPIs Selecionados</span>
+              <div class="stat-icon orange">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="epi-count">0</div>
+            <div class="stat-sub">de 12 disponíveis</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top">
+              <span class="stat-label">Fichas Cadastradas</span>
+              <div class="stat-icon green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/></svg>
+              </div>
+            </div>
+            <div class="stat-value">24</div>
+            <div class="stat-sub">este mês</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top">
+              <span class="stat-label">Colaboradores</span>
+              <div class="stat-icon green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+              </div>
+            </div>
+            <div class="stat-value">38</div>
+            <div class="stat-sub">ativos</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Dados do Colaborador</h2>
+            <span class="card-step">Passo 1 de 2</span>
+          </div>
+          <div class="form-row">
+            <div class="field">
+              <label class="field-label">Nome Completo</label>
+              <input type="text" class="field-input" placeholder="Ex: João da Silva Pereira">
+            </div>
+            <div class="field">
+              <label class="field-label">Função / Cargo</label>
+              <input type="text" class="field-input" placeholder="Ex: Eletricista, Pedreiro...">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field">
+              <label class="field-label">Matrícula</label>
+              <input type="text" class="field-input" placeholder="000000">
+            </div>
+            <div class="field">
+              <label class="field-label">Data de Entrega</label>
+              <input type="date" class="field-input">
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Equipamentos de Proteção</h2>
+            <span class="card-step">Passo 2 de 2</span>
+          </div>
+          <div class="epi-section-label">Proteção da Cabeça e Rosto</div>
+          <div class="epi-grid" id="epi-grid">
+            <div class="epi-item" data-name="Capacete de segurança">
+              <div class="epi-cb"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <span>Capacete de segurança</span>
+            </div>
+            <div class="epi-item" data-name="Óculos de segurança">
+              <div class="epi-cb"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <span>Óculos de segurança</span>
+            </div>
+            <div class="epi-item" data-name="Protetor facial">
+              <div class="epi-cb"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <span>Protetor facial</span>
+            </div>
+            <div class="epi-item" data-name="Protetor auricular">
+              <div class="epi-cb"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <span>Protetor auricular</span>
+            </div>
+            <div class="epi-item" data-name="Máscara PFF2">
+              <div class="epi-cb"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <span>Máscara PFF2</span>
+            </div>
+          </div>
+          <div class="epi-section-label" style="margin-top:20px">Proteção do Corpo e Membros</div>
+          <div class="epi-grid">
+            <div class="epi-item" data-name="Luvas de vaqueta">
+              <div class="epi-cb"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <span>Luvas de vaqueta</span>
+            </div>
+            <div class="epi-item" data-name="Luvas de borracha">
+              <div class="epi-cb"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <span>Luvas de borracha</span>
+            </div>
+            <div class="epi-item" data-name="Botas de segurança">
+              <div class="epi-cb"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <span>Botas de segurança</span>
+            </div>
+            <div class="epi-item" data-name="Perneiras">
+              <div class="epi-cb"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <span>Perneiras</span>
+            </div>
+            <div class="epi-item" data-name="Uniforme de trabalho">
+              <div class="epi-cb"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <span>Uniforme de trabalho</span>
+            </div>
+          </div>
+          <div class="epi-section-label" style="margin-top:20px">Proteção Contra Quedas</div>
+          <div class="epi-grid">
+            <div class="epi-item" data-name="Cinto paraquedista">
+              <div class="epi-cb"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <span>Cinto paraquedista</span>
+            </div>
+            <div class="epi-item" data-name="Trava-quedas retrátil">
+              <div class="epi-cb"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <span>Trava-quedas retrátil</span>
+            </div>
+          </div>
+          <button class="add-row-btn" id="add-epi-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Adicionar Novo EPI
+          </button>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn-primary" id="btn-save-epi">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Cadastrar Ficha
+          </button>
+          <button class="btn-ghost">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            Ver Fichas Cadastradas
+          </button>
+        </div>
+      </section>
+
+      <section class="page" id="page-clientes">
+        <div class="page-hero">
+          <div class="page-hero-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <div class="page-hero-text">
+            <h1>Ficha de Clientes</h1>
+            <p>Cadastro e gestão de clientes da empresa</p>
+          </div>
+          <div class="page-hero-badge">Cadastros</div>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-card highlight">
+            <div class="stat-top">
+              <span class="stat-label">Clientes Ativos</span>
+              <div class="stat-icon orange">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+              </div>
+            </div>
+            <div class="stat-value">47</div>
+            <div class="stat-sub">em contratos vigentes</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top">
+              <span class="stat-label">Novos este Mês</span>
+              <div class="stat-icon green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </div>
+            </div>
+            <div class="stat-value">6</div>
+            <div class="stat-sub">cadastrados</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top">
+              <span class="stat-label">Total Histórico</span>
+              <div class="stat-icon green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              </div>
+            </div>
+            <div class="stat-value">183</div>
+            <div class="stat-sub">desde 2018</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Informações do Cliente</h2>
+          </div>
+          <div class="field">
+            <label class="field-label">Nome do Cliente</label>
+            <input type="text" class="field-input" placeholder="Nome completo ou razão social">
+          </div>
+          <div class="form-row">
+            <div class="field">
+              <label class="field-label">Tipo de Documento</label>
+              <select class="field-input field-select">
+                <option>CPF</option>
+                <option>CNPJ</option>
+                <option>RG</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="field-label">Número do Documento</label>
+              <input type="text" class="field-input" placeholder="000.000.000-00">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field">
+              <label class="field-label">Telefone</label>
+              <input type="tel" class="field-input" placeholder="(00) 00000-0000">
+            </div>
+            <div class="field">
+              <label class="field-label">E-mail</label>
+              <input type="email" class="field-input" placeholder="contato@empresa.com">
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label">Endereço Completo</label>
+            <textarea class="field-input field-textarea" placeholder="Rua, número, complemento, bairro, cidade — estado"></textarea>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn-primary" onclick="showToast('Cliente cadastrado com sucesso!')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Cadastrar Cliente
+          </button>
+          <button class="btn-ghost">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            Ver Clientes Cadastrados
+          </button>
+        </div>
+      </section>
+
+      <section class="page" id="page-obras">
+        <div class="page-hero">
+          <div class="page-hero-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+          </div>
+          <div class="page-hero-text">
+            <h1>Cadastro de Obra</h1>
+            <p>Registre e gerencie as obras da empresa</p>
+          </div>
+          <div class="page-hero-badge">Obras</div>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-card highlight">
+            <div class="stat-top">
+              <span class="stat-label">Em Andamento</span>
+              <div class="stat-icon orange">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+            </div>
+            <div class="stat-value">12</div>
+            <div class="stat-sub">obras ativas</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top">
+              <span class="stat-label">Concluídas</span>
+              <div class="stat-icon green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+            </div>
+            <div class="stat-value">89</div>
+            <div class="stat-sub">total histórico</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top">
+              <span class="stat-label">Próx. Entrega</span>
+              <div class="stat-icon green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </div>
+            </div>
+            <div class="stat-value">8d</div>
+            <div class="stat-sub">Obra Centro — 09/04</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Dados da Obra</h2>
+          </div>
+          <div class="field">
+            <label class="field-label">Descrição da Obra</label>
+            <input type="text" class="field-input" placeholder="Ex: Reforma residencial — Setor Sul, Bloco B">
+          </div>
+          <div class="form-row">
+            <div class="field">
+              <label class="field-label">Cliente Responsável</label>
+              <select class="field-input field-select">
+                <option value="">Selecione um cliente...</option>
+                <option>João da Silva Pereira</option>
+                <option>Construtora Horizonte Ltda</option>
+                <option>Maria Fernanda Costa</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="field-label">Data de Entrega</label>
+              <input type="date" class="field-input">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field">
+              <label class="field-label">Valor do Contrato</label>
+              <input type="text" class="field-input" placeholder="R$ 0,00">
+            </div>
+            <div class="field">
+              <label class="field-label">Endereço da Obra</label>
+              <input type="text" class="field-input" placeholder="Rua e número da obra">
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Sistemas da Obra</h2>
+            <span class="card-hint">Adicione os sistemas que compõem esta obra</span>
+          </div>
+          <div class="sistemas-box" id="sistemas-box">
+            <div class="sistemas-empty" id="sistemas-empty">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span>Nenhum sistema adicionado</span>
+            </div>
+          </div>
+          <button class="add-row-btn" id="add-sistema-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Adicionar Sistema
+          </button>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn-primary" onclick="showToast('Obra cadastrada com sucesso!')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Cadastrar Obra
+          </button>
+          <button class="btn-ghost">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            Ver Obras Cadastradas
+          </button>
+        </div>
+      </section>
+
+      <section class="page" id="page-documentos">
+        <div class="page-hero">
+          <div class="page-hero-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </div>
+          <div class="page-hero-text">
+            <h1>Documentos da Obra</h1>
+            <p>Gerencie e atualize os documentos de cada obra</p>
+          </div>
+          <div class="page-hero-badge">Documentos</div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Selecionar Obra</h2>
+          </div>
+          <div class="field">
+            <label class="field-label">Obra para Atualizar</label>
+            <select class="field-input field-select">
+              <option value="">Selecione uma obra...</option>
+              <option>Reforma residencial — Setor Sul</option>
+              <option>Construção galpão — Zona Industrial</option>
+              <option>Ampliação hospital — Centro</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Status dos Documentos</h2>
+            <span class="card-hint">Marque os documentos já recebidos ou emitidos</span>
+          </div>
+          <div class="doc-checks-grid">
+            <div class="doc-check" onclick="toggleDocCheck(this)">
+              <div class="doc-check-box">
+                <svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="doc-check-info">
+                <span class="doc-check-title">ART / RRT Recebida</span>
+                <span class="doc-check-desc">Anotação de Responsabilidade Técnica</span>
+              </div>
+            </div>
+            <div class="doc-check" onclick="toggleDocCheck(this)">
+              <div class="doc-check-box">
+                <svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="doc-check-info">
+                <span class="doc-check-title">Alvará de Construção</span>
+                <span class="doc-check-desc">Emitido pela prefeitura</span>
+              </div>
+            </div>
+            <div class="doc-check" onclick="toggleDocCheck(this)">
+              <div class="doc-check-box">
+                <svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="doc-check-info">
+                <span class="doc-check-title">AVCB / Bombeiros</span>
+                <span class="doc-check-desc">Aprovado pelo Corpo de Bombeiros</span>
+              </div>
+            </div>
+            <div class="doc-check" onclick="toggleDocCheck(this)">
+              <div class="doc-check-box">
+                <svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="doc-check-info">
+                <span class="doc-check-title">Habite-se Emitido</span>
+                <span class="doc-check-desc">Aprovação final da construção</span>
+              </div>
+            </div>
+            <div class="doc-check" onclick="toggleDocCheck(this)">
+              <div class="doc-check-box">
+                <svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="doc-check-info">
+                <span class="doc-check-title">Projetos</span>
+                <span class="doc-check-desc">Arquitetônico, estrutural, etc.</span>
+              </div>
+            </div>
+            <div class="doc-check" onclick="toggleDocCheck(this)">
+              <div class="doc-check-box">
+                <svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="doc-check-info">
+                <span class="doc-check-title">Laudos Técnicos</span>
+                <span class="doc-check-desc">Laudo de vistoria e medições</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Anexar Arquivos</h2>
+          </div>
+          <div class="dropzone" id="dropzone">
+            <div class="dz-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <div class="dz-text">
+              <span class="dz-title">Arraste e solte os arquivos aqui</span>
+              <span class="dz-sub">PNG, JPG, PDF, DOCX — até 20 MB por arquivo</span>
+            </div>
+            <button class="dz-btn">Selecionar Arquivos</button>
+            <input type="file" id="file-input" multiple accept=".png,.jpg,.jpeg,.pdf,.docx" style="display:none">
+          </div>
+          <div class="files-list" id="files-list"></div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn-primary" onclick="showToast('Documentos atualizados com sucesso!')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Atualizar Documentos
+          </button>
+        </div>
+      </section>
+
+      <section class="page" id="page-notificacoes">
+        <div class="page-hero">
+          <div class="page-hero-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          </div>
+          <div class="page-hero-text">
+            <h1>Notificações</h1>
+            <p>Alertas e atualizações importantes do sistema</p>
+          </div>
+          <div class="page-hero-badge urgent">3 não lidas</div>
+        </div>
+
+        <div class="notif-list">
+          <div class="notif-item unread">
+            <div class="notif-dot orange"></div>
+            <div class="notif-body">
+              <div class="notif-top">
+                <span class="notif-title">Prazo de entrega se aproximando</span>
+                <span class="notif-time">Há 1 hora</span>
+              </div>
+              <p class="notif-desc">A obra "Ampliação hospital — Centro" tem entrega em 09/04/2026. Verifique o andamento e a documentação pendente.</p>
+              <span class="notif-tag">Obras</span>
+            </div>
+          </div>
+          <div class="notif-item unread">
+            <div class="notif-dot orange"></div>
+            <div class="notif-body">
+              <div class="notif-top">
+                <span class="notif-title">Documento pendente</span>
+                <span class="notif-time">Há 3 horas</span>
+              </div>
+              <p class="notif-desc">A obra "Reforma residencial — Setor Sul" ainda não possui Alvará de Construção registrado no sistema.</p>
+              <span class="notif-tag">Documentos</span>
+            </div>
+          </div>
+          <div class="notif-item unread">
+            <div class="notif-dot orange"></div>
+            <div class="notif-body">
+              <div class="notif-top">
+                <span class="notif-title">Ficha de EPI aguardando aprovação</span>
+                <span class="notif-time">Há 5 horas</span>
+              </div>
+              <p class="notif-desc">Carlos Alberto Souza solicitou equipamentos. Ficha nº 47 está aguardando confirmação do responsável.</p>
+              <span class="notif-tag">EPI</span>
+            </div>
+          </div>
+          <div class="notif-item">
+            <div class="notif-dot green"></div>
+            <div class="notif-body">
+              <div class="notif-top">
+                <span class="notif-title">Cliente cadastrado</span>
+                <span class="notif-time">Ontem, 14:32</span>
+              </div>
+              <p class="notif-desc">O cliente "Construtora Horizonte Ltda" foi registrado com sucesso por administrador.</p>
+              <span class="notif-tag">Clientes</span>
+            </div>
+          </div>
+          <div class="notif-item">
+            <div class="notif-dot muted"></div>
+            <div class="notif-body">
+              <div class="notif-top">
+                <span class="notif-title">Obra concluída</span>
+                <span class="notif-time">2 dias atrás</span>
+              </div>
+              <p class="notif-desc">A obra "Construção galpão — Zona Industrial" foi finalizada e marcada como concluída no sistema.</p>
+              <span class="notif-tag">Obras</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toast-msg"></span>
+</div>
+
+<div class="modal-overlay" id="epi-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">Adicionar Novo EPI</h3>
+      <button class="modal-close" onclick="closeModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="field">
+      <label class="field-label">Nome do Equipamento</label>
+      <input type="text" class="field-input" id="new-epi-input" placeholder="Ex: Respirador semifacial">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn-primary" onclick="confirmAddEpi()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Adicionar
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+const pages = {
+  'epi': 'Ficha de EPI',
+  'clientes': 'Ficha de Clientes',
+  'obras': 'Cadastro de Obra',
+  'documentos': 'Documentos da Obra',
+  'notificacoes': 'Notificações'
+};
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelector('[data-page="' + id + '"]').classList.add('active');
+  document.getElementById('tb-current').textContent = pages[id];
+}
+
+document.querySelectorAll('.sb-item, [data-page]').forEach(el => {
+  el.addEventListener('click', function() {
+    const pg = this.getAttribute('data-page');
+    if (pg) showPage(pg);
+  });
+});
+
+document.querySelectorAll('.epi-item').forEach(item => {
+  item.addEventListener('click', () => {
+    item.classList.toggle('checked');
+    updateEpiCount();
+  });
+});
+
+function updateEpiCount() {
+  document.getElementById('epi-count').textContent =
+    document.querySelectorAll('.epi-item.checked').length;
+}
+
+document.getElementById('add-epi-btn').addEventListener('click', () => {
+  document.getElementById('new-epi-input').value = '';
+  document.getElementById('epi-modal').classList.add('open');
+  setTimeout(() => document.getElementById('new-epi-input').focus(), 200);
+});
+
+document.getElementById('btn-save-epi').addEventListener('click', () => {
+  showToast('Ficha de EPI cadastrada com sucesso!');
+});
+
+function closeModal() {
+  document.getElementById('epi-modal').classList.remove('open');
+}
+
+function confirmAddEpi() {
+  const v = document.getElementById('new-epi-input').value.trim();
+  if (!v) return;
+  const grid = document.getElementById('epi-grid');
+  const div = document.createElement('div');
+  div.className = 'epi-item';
+  div.innerHTML = '<div class="epi-cb"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>' + v + '</span>';
+  div.addEventListener('click', () => { div.classList.toggle('checked'); updateEpiCount(); });
+  grid.appendChild(div);
+  closeModal();
+  showToast('"' + v + '" adicionado com sucesso!');
+}
+
+document.getElementById('epi-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+document.getElementById('new-epi-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') confirmAddEpi();
+});
+
+document.getElementById('add-sistema-btn').addEventListener('click', () => {
+  const box = document.getElementById('sistemas-box');
+  const empty = document.getElementById('sistemas-empty');
+  if (empty) empty.remove();
+  const row = document.createElement('div');
+  row.className = 'sistema-row';
+  row.innerHTML = '<input type="text" class="field-input" placeholder="Nome do sistema (ex: Elétrico, Hidráulico, Estrutural...)"><button class="sistema-del" onclick="this.parentElement.remove()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
+  box.appendChild(row);
+  row.querySelector('input').focus();
+});
+
+function toggleDocCheck(el) {
+  el.classList.toggle('checked');
+}
+
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('file-input');
+
+dropzone.querySelector('.dz-btn').addEventListener('click', e => {
+  e.stopPropagation();
+  fileInput.click();
+});
+
+dropzone.addEventListener('click', () => fileInput.click());
+
+dropzone.addEventListener('dragover', e => {
+  e.preventDefault();
+  dropzone.classList.add('drag-over');
+});
+
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
+
+dropzone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropzone.classList.remove('drag-over');
+  addFiles(e.dataTransfer.files);
+});
+
+fileInput.addEventListener('change', () => addFiles(fileInput.files));
+
+function addFiles(files) {
+  const list = document.getElementById('files-list');
+  Array.from(files).forEach(f => {
+    const ext = f.name.split('.').pop().toUpperCase();
+    const size = f.size > 1048576 ? (f.size / 1048576).toFixed(1) + ' MB' : Math.round(f.size / 1024) + ' KB';
+    const item = document.createElement('div');
+    item.className = 'file-item';
+    item.innerHTML = '<div class="file-ext">' + ext + '</div><div class="file-info"><span class="file-name">' + f.name + '</span><span class="file-size">' + size + '</span></div><button class="file-del" onclick="this.parentElement.remove()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
+    list.appendChild(item);
+  });
+}
+
+let toastTimer;
+function showToast(msg) {
+  clearTimeout(toastTimer);
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+</script>
+</body>
+</html>
