@@ -42,6 +42,29 @@
   --font-body: 'Barlow', sans-serif;
 }
 
+body.light-theme {
+  --g950: #f4f7f5;
+  --g900: #ffffff;
+  --g800: #f8fbf8;
+  --g750: #f2f7f2;
+  --g700: #eaf2ea;
+  --g600: #d8e7d9;
+  --g500: #8bb493;
+  --g400: #679772;
+  --g300: #4d7d5a;
+  --g200: #2f5c3a;
+  --txt-bright: #122018;
+  --txt-main: #1f3527;
+  --txt-dim: #3c5b45;
+  --txt-muted: #5f7d66;
+  --border: #d8e6da;
+  --border-mid: #c8dbcb;
+  --border-hover: #9fbea5;
+  --shadow-sm: 0 2px 8px rgba(8, 28, 12, 0.08);
+  --shadow-md: 0 8px 32px rgba(8, 28, 12, 0.12);
+  --shadow-lg: 0 20px 60px rgba(8, 28, 12, 0.18);
+}
+
 html, body {
   height: 100%;
   font-family: var(--font-body);
