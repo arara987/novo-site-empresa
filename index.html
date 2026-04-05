@@ -124,7 +124,7 @@
           </div>
           <div class="page-hero-text">
             <h1>Ficha de EPI</h1>
-            <p>Equipamentos de Proteção Individual por colaborador</p>
+            <p>Cadastro e manutenção da lista de Equipamentos de Proteção Individual</p>
           </div>
           <div class="page-hero-badge">Segurança do Trabalho</div>
         </div>
@@ -132,59 +132,20 @@
         <div class="stats-row">
           <div class="stat-card highlight">
             <div class="stat-top">
-              <span class="stat-label">EPIs Selecionados</span>
+              <span class="stat-label">EPIs Cadastrados</span>
               <div class="stat-icon orange">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
             </div>
-            <div class="stat-value" id="epi-count">0</div>
-            <div class="stat-sub">de 12 disponíveis</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-top">
-              <span class="stat-label">Fichas Cadastradas</span>
-              <div class="stat-icon green">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/></svg>
-              </div>
-            </div>
-            <div class="stat-value" id="epi-fichas-count">0</div>
-            <div class="stat-sub">sem fichas cadastradas</div>
+            <div class="stat-value" id="epi-cadastrados-count">0</div>
+            <div class="stat-sub">na lista atual</div>
           </div>
         </div>
 
         <div class="card">
           <div class="card-header">
-            <h2 class="card-title">Dados do Colaborador</h2>
-            <span class="card-step">Passo 1 de 2</span>
+            <h2 class="card-title">Lista de EPIs</h2>
           </div>
-          <div class="form-row">
-            <div class="field">
-              <label class="field-label">Nome Completo</label>
-              <input type="text" class="field-input" placeholder="Ex: João da Silva Pereira">
-            </div>
-            <div class="field">
-              <label class="field-label">Função / Cargo</label>
-              <input type="text" class="field-input" placeholder="Ex: Eletricista, Pedreiro...">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="field">
-              <label class="field-label">Matrícula</label>
-              <input type="text" class="field-input" placeholder="000000">
-            </div>
-            <div class="field">
-              <label class="field-label">Data de Entrega</label>
-              <input type="date" class="field-input">
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title">Equipamentos de Proteção</h2>
-            <span class="card-step">Passo 2 de 2</span>
-          </div>
-          <div class="epi-section-label">Proteção da Cabeça e Rosto</div>
           <div class="epi-grid" id="epi-grid">
             <div class="epi-item" data-name="Capacete de segurança">
               <div class="epi-cb"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
@@ -206,9 +167,6 @@
               <div class="epi-cb"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
               <span>Máscara PFF2</span>
             </div>
-          </div>
-          <div class="epi-section-label" style="margin-top:20px">Proteção do Corpo e Membros</div>
-          <div class="epi-grid">
             <div class="epi-item" data-name="Luvas de vaqueta">
               <div class="epi-cb"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
               <span>Luvas de vaqueta</span>
@@ -229,9 +187,6 @@
               <div class="epi-cb"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
               <span>Uniforme de trabalho</span>
             </div>
-          </div>
-          <div class="epi-section-label" style="margin-top:20px">Proteção Contra Quedas</div>
-          <div class="epi-grid">
             <div class="epi-item" data-name="Cinto paraquedista">
               <div class="epi-cb"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
               <span>Cinto paraquedista</span>
@@ -250,16 +205,8 @@
         <div class="form-actions">
           <button class="btn-primary" id="btn-save-epi">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-            Cadastrar Ficha
+            Atualizar Lista de EPIs
           </button>
-          <button class="btn-ghost" id="btn-view-epi">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            Ver Fichas Cadastradas
-          </button>
-        </div>
-        <div class="card" id="epi-list-card" style="display:none">
-          <div class="card-header"><h2 class="card-title">Fichas de EPI Cadastradas</h2></div>
-          <div id="epi-list"></div>
         </div>
       </section>
 
@@ -586,7 +533,6 @@ const pages = {
 const state = {
   clientes: [],
   obras: [],
-  epiFichas: [],
   notifications: [],
   selectedClienteIndex: null,
   sidebarCollapsed: false,
@@ -679,7 +625,7 @@ function removeEpiByName(name) {
       item.remove();
     }
   });
-  updateEpiCount();
+  updateEpiRegistradosCount();
   renderEstoque();
   showToast(`"${name}" removido da lista de EPIs.`, 'success');
 }
@@ -687,11 +633,6 @@ function removeEpiByName(name) {
 function decorateEpiItem(item) {
   if (!item || item.dataset.decorated === 'true') return;
   item.dataset.decorated = 'true';
-  item.addEventListener('click', event => {
-    if (event.target.closest('.epi-remove-btn')) return;
-    item.classList.toggle('checked');
-    updateEpiCount();
-  });
 
   const removeBtn = document.createElement('button');
   removeBtn.className = 'epi-remove-btn';
@@ -709,9 +650,9 @@ function decorateEpiItem(item) {
 
 document.querySelectorAll('.epi-item').forEach(decorateEpiItem);
 
-function updateEpiCount() {
-  document.getElementById('epi-count').textContent =
-    document.querySelectorAll('.epi-item.checked').length;
+function updateEpiRegistradosCount() {
+  document.getElementById('epi-cadastrados-count').textContent =
+    document.querySelectorAll('.epi-item').length;
 }
 
 document.getElementById('add-epi-btn').addEventListener('click', () => {
@@ -721,18 +662,9 @@ document.getElementById('add-epi-btn').addEventListener('click', () => {
 });
 
 document.getElementById('btn-save-epi').addEventListener('click', () => {
-  const epiInputs = [...document.querySelectorAll('#page-epi .field-input')];
-  if (!validateRequiredFields(epiInputs)) {
-    return showToast('A ficha não foi cadastrada pois todos os campos precisam ser preenchidos.', 'error');
-  }
-
-  const colaborador = document.querySelector('#page-epi input[type="text"]').value.trim();
-  const selectedEpis = [...document.querySelectorAll('.epi-item.checked span')].map(el => el.textContent);
-  state.epiFichas.push({ colaborador, selectedEpis, data: new Date().toLocaleDateString('pt-BR') });
-  document.getElementById('epi-fichas-count').textContent = state.epiFichas.length;
-  renderEpiList();
-  addNotification('EPI', `Ficha de EPI cadastrada para ${colaborador}.`, 'epi', '#epi-list-card');
-  showToast('Cadastro de ficha de EPI realizado com sucesso!', 'success');
+  const totalEpis = document.querySelectorAll('.epi-item').length;
+  addNotification('EPI', `Lista de EPIs atualizada com ${totalEpis} item(ns).`, 'epi', '#epi-grid');
+  showToast('Lista de EPIs atualizada com sucesso!', 'success');
 });
 
 function closeModal() {
@@ -749,6 +681,7 @@ function confirmAddEpi() {
   div.innerHTML = '<div class="epi-cb"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>' + v + '</span>';
   decorateEpiItem(div);
   grid.appendChild(div);
+  updateEpiRegistradosCount();
   if (!state.estoqueEpis.find(item => item.nome.toLowerCase() === v.toLowerCase())) {
     state.estoqueEpis.push({ nome: v, total: 0, emUso: 0 });
     renderEstoque();
@@ -804,21 +737,6 @@ function addFiles(files) {
     item.innerHTML = '<div class="file-ext">' + ext + '</div><div class="file-info"><span class="file-name">' + f.name + '</span><span class="file-size">' + size + '</span></div><button class="file-del" onclick="this.parentElement.remove()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
     list.appendChild(item);
   });
-}
-
-function renderList(containerId, items, formatter) {
-  const container = document.getElementById(containerId);
-  if (!items.length) {
-    container.innerHTML = '<p class="stat-sub">Nenhum cadastro encontrado.</p>';
-    return;
-  }
-  container.innerHTML = items.map(formatter).join('');
-}
-
-function renderEpiList() {
-  renderList('epi-list', state.epiFichas, item =>
-    `<div class="file-item"><div class="file-info"><span class="file-name">${item.colaborador}</span><span class="file-size">${item.selectedEpis.length} EPIs • ${item.data}</span></div></div>`
-  );
 }
 
 function renderClientesList() {
@@ -953,7 +871,6 @@ function toggleCard(cardId) {
 }
 
 document.getElementById('btn-view-clientes').addEventListener('click', () => toggleCard('clientes-list-card'));
-document.getElementById('btn-view-epi').addEventListener('click', () => toggleCard('epi-list-card'));
 
 function addNotification(tag, description, targetPage = 'notificacoes', targetSelector = '') {
   state.notifications.unshift({
@@ -1075,6 +992,7 @@ document.getElementById('estoque-lista').addEventListener('change', event => {
 
 renderNotifications();
 renderEstoque();
+updateEpiRegistradosCount();
 updateClienteCards();
 renderClientesList();
 renderObrasDoCliente();
