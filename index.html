@@ -20,6 +20,9 @@
         <strong>BELFORT</strong>
         <span>ENGENHARIA</span>
       </div>
+      <button class="tb-icon-btn sb-collapse-btn" id="tb-collapse-btn" title="Retrair barra lateral" aria-label="Retrair barra lateral">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+      </button>
     </div>
 
     <div class="sb-section-label">Gestão</div>
@@ -92,9 +95,6 @@
   <div class="main-wrap">
     <header class="topbar">
       <div class="topbar-breadcrumb">
-        <button class="tb-icon-btn" id="tb-collapse-btn" title="Retrair barra lateral" aria-label="Retrair barra lateral">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
-        </button>
         <span class="tb-root">Belfort</span>
         <svg class="tb-sep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
         <span class="tb-current" id="tb-current">Ficha de EPI</span>
@@ -149,16 +149,6 @@
             </div>
             <div class="stat-value" id="epi-fichas-count">0</div>
             <div class="stat-sub">sem fichas cadastradas</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-top">
-              <span class="stat-label">Colaboradores</span>
-              <div class="stat-icon green">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-              </div>
-            </div>
-            <div class="stat-value" id="epi-colab-count">0</div>
-            <div class="stat-sub">aguardando cadastro</div>
           </div>
         </div>
 
@@ -305,16 +295,6 @@
             </div>
             <div class="stat-value" id="obras-count">0</div>
             <div class="stat-sub">atribuídas aos clientes</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-top">
-              <span class="stat-label">Cliente Selecionado</span>
-              <div class="stat-icon green">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-              </div>
-            </div>
-            <div class="stat-value" id="cliente-obras-count">0</div>
-            <div class="stat-sub" id="cliente-obras-sub">selecione um cliente</div>
           </div>
         </div>
 
@@ -613,9 +593,16 @@ const state = {
   estoqueEpis: [
     { nome: 'Capacete de segurança', total: 32, emUso: 20 },
     { nome: 'Óculos de segurança', total: 28, emUso: 16 },
+    { nome: 'Protetor facial', total: 20, emUso: 9 },
+    { nome: 'Protetor auricular', total: 24, emUso: 11 },
+    { nome: 'Luvas de borracha', total: 36, emUso: 18 },
     { nome: 'Luvas de vaqueta', total: 54, emUso: 30 },
     { nome: 'Botas de segurança', total: 40, emUso: 18 },
-    { nome: 'Máscara PFF2', total: 75, emUso: 44 }
+    { nome: 'Máscara PFF2', total: 75, emUso: 44 },
+    { nome: 'Perneiras', total: 18, emUso: 7 },
+    { nome: 'Uniforme de trabalho', total: 60, emUso: 26 },
+    { nome: 'Cinto paraquedista', total: 14, emUso: 6 },
+    { nome: 'Trava-quedas retrátil', total: 10, emUso: 4 }
   ]
 };
 
@@ -709,7 +696,6 @@ document.getElementById('btn-save-epi').addEventListener('click', () => {
   const selectedEpis = [...document.querySelectorAll('.epi-item.checked span')].map(el => el.textContent);
   state.epiFichas.push({ colaborador, selectedEpis, data: new Date().toLocaleDateString('pt-BR') });
   document.getElementById('epi-fichas-count').textContent = state.epiFichas.length;
-  document.getElementById('epi-colab-count').textContent = state.epiFichas.length;
   renderEpiList();
   addNotification('EPI', `Ficha de EPI cadastrada para ${colaborador}.`, 'epi', '#epi-list-card');
   showToast('Cadastro de ficha de EPI realizado com sucesso!', 'success');
@@ -728,6 +714,10 @@ function confirmAddEpi() {
   div.innerHTML = '<div class="epi-cb"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>' + v + '</span>';
   div.addEventListener('click', () => { div.classList.toggle('checked'); updateEpiCount(); });
   grid.appendChild(div);
+  if (!state.estoqueEpis.find(item => item.nome.toLowerCase() === v.toLowerCase())) {
+    state.estoqueEpis.push({ nome: v, total: 0, emUso: 0 });
+    renderEstoque();
+  }
   closeModal();
   showToast('"' + v + '" adicionado com sucesso!', 'success');
 }
@@ -837,14 +827,6 @@ function updateClienteCards() {
     ? 'Selecione um cliente para cadastrar uma obra'
     : `Cliente selecionado: ${state.clientes[state.selectedClienteIndex].nome}`;
   document.getElementById('obra-cadastro-hint').textContent = name;
-
-  const obrasDoCliente = state.selectedClienteIndex === null
-    ? 0
-    : state.obras.filter(obra => obra.clienteIndex === state.selectedClienteIndex).length;
-  document.getElementById('cliente-obras-count').textContent = obrasDoCliente;
-  document.getElementById('cliente-obras-sub').textContent = state.selectedClienteIndex === null
-    ? 'selecione um cliente'
-    : 'obras do cliente selecionado';
 }
 
 function selectCliente(index) {
@@ -1006,14 +988,45 @@ function renderEstoque() {
   document.getElementById('estoque-disponivel').textContent = disponivel;
 
   document.getElementById('estoque-lista').innerHTML = state.estoqueEpis.map(item => `
-    <div class="file-item">
+    <div class="file-item estoque-item">
       <div class="file-info">
         <span class="file-name">${item.nome}</span>
         <span class="file-size">Total: ${item.total} • Em uso: ${item.emUso} • Disponível: ${item.total - item.emUso}</span>
       </div>
+      <div class="estoque-controls">
+        <button class="estoque-step-btn" data-action="decrease" data-name="${item.nome}" aria-label="Reduzir quantidade">-</button>
+        <input class="estoque-input" type="number" min="${item.emUso}" value="${item.total}" data-action="set" data-name="${item.nome}" aria-label="Quantidade total em estoque de ${item.nome}">
+        <button class="estoque-step-btn" data-action="increase" data-name="${item.nome}" aria-label="Aumentar quantidade">+</button>
+      </div>
     </div>
   `).join('');
 }
+
+document.getElementById('estoque-lista').addEventListener('click', event => {
+  const button = event.target.closest('.estoque-step-btn');
+  if (!button) return;
+
+  const nome = button.dataset.name;
+  const item = state.estoqueEpis.find(epi => epi.nome === nome);
+  if (!item) return;
+
+  const step = button.dataset.action === 'increase' ? 1 : -1;
+  item.total = Math.max(item.emUso, item.total + step);
+  renderEstoque();
+});
+
+document.getElementById('estoque-lista').addEventListener('change', event => {
+  const input = event.target.closest('.estoque-input');
+  if (!input) return;
+
+  const nome = input.dataset.name;
+  const item = state.estoqueEpis.find(epi => epi.nome === nome);
+  if (!item) return;
+
+  const requested = Number(input.value);
+  item.total = Number.isFinite(requested) ? Math.max(item.emUso, requested) : item.total;
+  renderEstoque();
+});
 
 renderNotifications();
 renderEstoque();

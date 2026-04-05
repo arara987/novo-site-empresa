@@ -125,6 +125,12 @@ body.light-theme * {
   position: relative;
 }
 
+.sb-collapse-btn {
+  margin-left: auto;
+  width: 32px;
+  height: 32px;
+}
+
 .sb-logo-icon {
   width: 40px;
   height: 40px;
@@ -326,6 +332,10 @@ body.light-theme * {
   padding-inline: 8px;
 }
 
+.app.sidebar-collapsed .sb-collapse-btn {
+  margin-left: 0;
+}
+
 .app.sidebar-collapsed .sb-nav {
   padding-inline: 8px;
 }
@@ -386,7 +396,7 @@ body.light-theme * {
 .topbar-breadcrumb {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .tb-root {
@@ -1258,6 +1268,45 @@ body.light-theme * {
 .file-del:hover { color: #e05858; background: rgba(220,60,60,0.1); }
 
 .file-del svg { width: 14px; height: 14px; }
+
+.estoque-item {
+  justify-content: space-between;
+}
+
+.estoque-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.estoque-step-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: var(--g800);
+  color: var(--txt-main);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.estoque-step-btn:hover {
+  border-color: var(--border-hover);
+  color: var(--txt-bright);
+}
+
+.estoque-input {
+  width: 74px;
+  height: 32px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border-mid);
+  background: var(--g900);
+  color: var(--txt-bright);
+  text-align: center;
+  font-size: 13px;
+  padding: 0 6px;
+}
 
 
 /* ─── NOTIFICATIONS ──────────────────────────────────────── */
