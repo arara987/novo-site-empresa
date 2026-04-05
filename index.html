@@ -59,6 +59,15 @@
 
     <div class="sb-section-label">Sistema</div>
     <nav class="sb-nav">
+      <button class="sb-item" data-page="estoque">
+        <span class="sb-item-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 17l9 4 9-4"/><path d="M3 12l9 4 9-4"/></svg>
+        </span>
+        <span class="sb-item-label">Estoque EPI</span>
+        <span class="sb-item-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </span>
+      </button>
       <button class="sb-item" data-page="notificacoes">
         <span class="sb-item-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
@@ -83,6 +92,9 @@
   <div class="main-wrap">
     <header class="topbar">
       <div class="topbar-breadcrumb">
+        <button class="tb-icon-btn" id="tb-collapse-btn" title="Retrair barra lateral" aria-label="Retrair barra lateral">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+        </button>
         <span class="tb-root">Belfort</span>
         <svg class="tb-sep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
         <span class="tb-current" id="tb-current">Ficha de EPI</span>
@@ -508,18 +520,47 @@
       </section>
 
       <section class="page" id="page-notificacoes">
-        <div class="page-hero">
-          <div class="page-hero-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
-          </div>
-          <div class="page-hero-text">
-            <h1>Notificações</h1>
-            <p>Alertas e atualizações importantes do sistema</p>
-          </div>
+        <div class="page-header-inline">
+          <h2>Notificações</h2>
           <div class="page-hero-badge urgent" id="notificacoes-badge">0 não lidas</div>
         </div>
-
         <div class="notif-list" id="notif-list"></div>
+      </section>
+
+      <section class="page" id="page-estoque">
+        <div class="page-header-inline">
+          <h2>Controle de Estoque de EPIs</h2>
+        </div>
+        <div class="stats-row">
+          <div class="stat-card highlight">
+            <div class="stat-top">
+              <span class="stat-label">Estoque Geral</span>
+            </div>
+            <div class="stat-value" id="estoque-total">0</div>
+            <div class="stat-sub">somatório total de EPIs</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top">
+              <span class="stat-label">Em Uso</span>
+            </div>
+            <div class="stat-value" id="estoque-uso">0</div>
+            <div class="stat-sub">EPIs atualmente utilizados</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top">
+              <span class="stat-label">Não está em Uso</span>
+            </div>
+            <div class="stat-value" id="estoque-nao-uso">0</div>
+            <div class="stat-sub">estoque reservado/disponível</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Estoque disponível consolidado</h2>
+            <span class="card-step"><span id="estoque-disponivel">0</span> disponíveis</span>
+          </div>
+          <div id="estoque-lista"></div>
+        </div>
       </section>
 
     </main>
@@ -558,6 +599,7 @@ const pages = {
   'epi': 'Ficha de EPI',
   'clientes': 'Ficha de Clientes',
   'documentos': 'Documentos da Obra',
+  'estoque': 'Estoque de EPIs',
   'notificacoes': 'Notificações'
 };
 
@@ -566,7 +608,15 @@ const state = {
   obras: [],
   epiFichas: [],
   notifications: [],
-  selectedClienteIndex: null
+  selectedClienteIndex: null,
+  sidebarCollapsed: false,
+  estoqueEpis: [
+    { nome: 'Capacete de segurança', total: 32, emUso: 20 },
+    { nome: 'Óculos de segurança', total: 28, emUso: 16 },
+    { nome: 'Luvas de vaqueta', total: 54, emUso: 30 },
+    { nome: 'Botas de segurança', total: 40, emUso: 18 },
+    { nome: 'Máscara PFF2', total: 75, emUso: 44 }
+  ]
 };
 
 function showPage(id) {
@@ -582,11 +632,17 @@ function toggleTheme() {
   localStorage.setItem('theme', isLight ? 'light' : 'dark');
 }
 
+function toggleSidebar() {
+  state.sidebarCollapsed = !state.sidebarCollapsed;
+  document.querySelector('.app').classList.toggle('sidebar-collapsed', state.sidebarCollapsed);
+}
+
 if (localStorage.getItem('theme') === 'light') {
   document.body.classList.add('light-theme');
 }
 
 document.getElementById('theme-toggle-btn').addEventListener('click', toggleTheme);
+document.getElementById('tb-collapse-btn').addEventListener('click', toggleSidebar);
 
 document.querySelectorAll('.sb-item, [data-page]').forEach(el => {
   el.addEventListener('click', function() {
@@ -655,7 +711,7 @@ document.getElementById('btn-save-epi').addEventListener('click', () => {
   document.getElementById('epi-fichas-count').textContent = state.epiFichas.length;
   document.getElementById('epi-colab-count').textContent = state.epiFichas.length;
   renderEpiList();
-  addNotification('EPI', `Ficha de EPI cadastrada para ${colaborador}.`);
+  addNotification('EPI', `Ficha de EPI cadastrada para ${colaborador}.`, 'epi', '#epi-list-card');
   showToast('Cadastro de ficha de EPI realizado com sucesso!', 'success');
 });
 
@@ -824,7 +880,7 @@ document.getElementById('btn-save-cliente').addEventListener('click', () => {
   state.clientes.push(cliente);
   document.getElementById('clientes-count').textContent = state.clientes.length;
   renderClientesList();
-  addNotification('Clientes', `Novo cliente cadastrado: ${nome}.`);
+  addNotification('Clientes', `Novo cliente cadastrado: ${nome}.`, 'clientes', '#clientes-list-card');
   showToast('Cadastro de cliente realizado com sucesso!', 'success');
 
   if (state.selectedClienteIndex === null) {
@@ -863,14 +919,14 @@ document.getElementById('btn-save-obra').addEventListener('click', () => {
   renderClientesList();
   updateObraOptions();
   updateClienteCards();
-  addNotification('Obras', `Obra cadastrada para ${obra.clienteNome}: ${obra.descricao}.`);
+  addNotification('Obras', `Obra cadastrada para ${obra.clienteNome}: ${obra.descricao}.`, 'clientes', '#obras-list-card');
   showToast('Cadastro de obra realizado com sucesso!', 'success');
 });
 
 document.getElementById('btn-update-docs').addEventListener('click', () => {
   const obra = document.getElementById('documento-obra').selectedOptions[0]?.textContent;
   if (!document.getElementById('documento-obra').value) return showToast('Selecione uma obra para atualizar documentos.', 'error');
-  addNotification('Documentos', `Documentos atualizados para "${obra}".`);
+  addNotification('Documentos', `Documentos atualizados para "${obra}".`, 'documentos', '#documento-obra');
   showToast('Documentos atualizados com sucesso!', 'success');
 });
 
@@ -882,15 +938,40 @@ function toggleCard(cardId) {
 document.getElementById('btn-view-clientes').addEventListener('click', () => toggleCard('clientes-list-card'));
 document.getElementById('btn-view-epi').addEventListener('click', () => toggleCard('epi-list-card'));
 
-function addNotification(tag, description) {
+function addNotification(tag, description, targetPage = 'notificacoes', targetSelector = '') {
   state.notifications.unshift({
     tag,
     description,
     time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-    unread: true
+    unread: true,
+    targetPage,
+    targetSelector
   });
   renderNotifications();
 }
+
+function markNotificationAsRead(index) {
+  if (!state.notifications[index]) return;
+  state.notifications[index].unread = false;
+  renderNotifications();
+}
+
+function openNotification(index) {
+  const notification = state.notifications[index];
+  if (!notification) return;
+  markNotificationAsRead(index);
+  showPage(notification.targetPage || 'notificacoes');
+  if (notification.targetSelector) {
+    const target = document.querySelector(notification.targetSelector);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      target.classList.add('section-focus');
+      setTimeout(() => target.classList.remove('section-focus'), 1500);
+    }
+  }
+}
+window.openNotification = openNotification;
+window.markNotificationAsRead = markNotificationAsRead;
 
 function renderNotifications() {
   const list = document.getElementById('notif-list');
@@ -902,18 +983,40 @@ function renderNotifications() {
     list.innerHTML = '<div class="notif-item"><div class="notif-body"><p class="notif-desc">Sem notificações no momento.</p></div></div>';
     return;
   }
-  list.innerHTML = state.notifications.map(n => `
-    <div class="notif-item ${n.unread ? 'unread' : ''}">
-      <div class="notif-dot ${n.unread ? 'orange' : 'muted'}"></div>
+  list.innerHTML = state.notifications.map((n, index) => `
+    <button class="notif-item ${n.unread ? 'unread' : ''}" onclick="openNotification(${index})">
+      <div class="notif-dot ${n.unread ? 'orange' : 'muted'}" onclick="event.stopPropagation(); markNotificationAsRead(${index})"></div>
       <div class="notif-body">
         <div class="notif-top"><span class="notif-title">${n.tag}</span><span class="notif-time">${n.time}</span></div>
         <p class="notif-desc">${n.description}</p><span class="notif-tag">${n.tag}</span>
+      </div>
+    </button>
+  `).join('');
+}
+
+function renderEstoque() {
+  const total = state.estoqueEpis.reduce((sum, item) => sum + item.total, 0);
+  const emUso = state.estoqueEpis.reduce((sum, item) => sum + item.emUso, 0);
+  const naoUso = total - emUso;
+  const disponivel = naoUso;
+
+  document.getElementById('estoque-total').textContent = total;
+  document.getElementById('estoque-uso').textContent = emUso;
+  document.getElementById('estoque-nao-uso').textContent = naoUso;
+  document.getElementById('estoque-disponivel').textContent = disponivel;
+
+  document.getElementById('estoque-lista').innerHTML = state.estoqueEpis.map(item => `
+    <div class="file-item">
+      <div class="file-info">
+        <span class="file-name">${item.nome}</span>
+        <span class="file-size">Total: ${item.total} • Em uso: ${item.emUso} • Disponível: ${item.total - item.emUso}</span>
       </div>
     </div>
   `).join('');
 }
 
 renderNotifications();
+renderEstoque();
 updateClienteCards();
 renderClientesList();
 renderObrasDoCliente();

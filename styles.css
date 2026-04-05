@@ -72,11 +72,16 @@ html, body {
   color: var(--txt-main);
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.35s ease, color 0.35s ease;
 }
 
 button { cursor: pointer; font-family: inherit; border: none; background: none; }
 input, select, textarea { font-family: inherit; }
 a { text-decoration: none; color: inherit; }
+
+body.light-theme * {
+  transition: color 0.25s ease, border-color 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease;
+}
 
 .app {
   display: flex;
@@ -98,6 +103,7 @@ a { text-decoration: none; color: inherit; }
   position: relative;
   z-index: 20;
   overflow: hidden;
+  transition: width 0.25s ease, min-width 0.25s ease;
 }
 
 .sidebar::before {
@@ -302,6 +308,38 @@ a { text-decoration: none; color: inherit; }
   margin-top: 3px;
 }
 
+.app.sidebar-collapsed .sidebar {
+  width: 82px;
+  min-width: 82px;
+}
+
+.app.sidebar-collapsed .sb-logo-text,
+.app.sidebar-collapsed .sb-section-label,
+.app.sidebar-collapsed .sb-item-label,
+.app.sidebar-collapsed .sb-item-arrow,
+.app.sidebar-collapsed .sb-user-info {
+  display: none;
+}
+
+.app.sidebar-collapsed .sb-logo {
+  justify-content: center;
+  padding-inline: 8px;
+}
+
+.app.sidebar-collapsed .sb-nav {
+  padding-inline: 8px;
+}
+
+.app.sidebar-collapsed .sb-item {
+  justify-content: center;
+  gap: 0;
+  padding-inline: 8px;
+}
+
+.app.sidebar-collapsed .sb-user {
+  justify-content: center;
+}
+
 .sb-logout {
   width: 30px;
   height: 30px;
@@ -445,7 +483,7 @@ a { text-decoration: none; color: inherit; }
   flex: 1;
   overflow-y: auto;
   background: var(--g950);
-  padding: 32px 36px 60px;
+  padding: 32px 16px 60px;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
 }
@@ -456,7 +494,7 @@ a { text-decoration: none; color: inherit; }
 
 .page {
   display: none;
-  max-width: 980px;
+  max-width: 1060px;
   margin: 0 auto;
   animation: pageIn 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -472,7 +510,7 @@ a { text-decoration: none; color: inherit; }
 /* ─── PAGE HERO ──────────────────────────────────────────── */
 
 .page-hero {
-  display: flex;
+  display: none;
   align-items: center;
   gap: 18px;
   margin-bottom: 28px;
@@ -482,6 +520,20 @@ a { text-decoration: none; color: inherit; }
   border-radius: var(--r-xl);
   position: relative;
   overflow: hidden;
+}
+
+.page-header-inline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.page-header-inline h2 {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--txt-bright);
 }
 
 .page-hero::before {
@@ -1218,6 +1270,8 @@ a { text-decoration: none; color: inherit; }
 
 .notif-item {
   display: flex;
+  width: 100%;
+  text-align: left;
   gap: 16px;
   padding: 20px 22px;
   background: var(--g800);
@@ -1248,6 +1302,7 @@ a { text-decoration: none; color: inherit; }
   background: var(--o400);
   box-shadow: 0 0 10px rgba(240,120,40,0.6);
   animation: dotPulse 2.5s ease-in-out infinite;
+  cursor: pointer;
 }
 
 .notif-dot.green { background: var(--g200); }
@@ -1363,6 +1418,29 @@ a { text-decoration: none; color: inherit; }
 }
 
 .btn-ghost svg { width: 15px; height: 15px; }
+
+.section-focus {
+  box-shadow: 0 0 0 2px rgba(240,120,40,0.35), var(--shadow-sm);
+}
+
+body.light-theme .card,
+body.light-theme .stat-card,
+body.light-theme .tb-icon-btn,
+body.light-theme .field-input,
+body.light-theme .btn-ghost,
+body.light-theme .file-item,
+body.light-theme .notif-item {
+  border-width: 2px;
+}
+
+body.light-theme .tb-current,
+body.light-theme .card-title,
+body.light-theme .field-label,
+body.light-theme .stat-label,
+body.light-theme .file-name,
+body.light-theme .notif-title {
+  font-weight: 700;
+}
 
 
 /* ─── TOAST ──────────────────────────────────────────────── */
