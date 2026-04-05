@@ -20,6 +20,9 @@
         <strong>BELFORT</strong>
         <span>ENGENHARIA</span>
       </div>
+      <button class="tb-icon-btn sb-collapse-btn" id="tb-collapse-btn" title="Retrair barra lateral" aria-label="Retrair barra lateral">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="m16 15-3-3 3-3"/></svg>
+      </button>
     </div>
 
     <div class="sb-section-label">Gestão</div>
@@ -42,15 +45,6 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
         </span>
       </button>
-      <button class="sb-item" data-page="obras">
-        <span class="sb-item-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
-        </span>
-        <span class="sb-item-label">Obras</span>
-        <span class="sb-item-arrow">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-        </span>
-      </button>
     </nav>
 
     <div class="sb-section-label">Arquivos</div>
@@ -68,6 +62,15 @@
 
     <div class="sb-section-label">Sistema</div>
     <nav class="sb-nav">
+      <button class="sb-item" data-page="estoque">
+        <span class="sb-item-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 17l9 4 9-4"/><path d="M3 12l9 4 9-4"/></svg>
+        </span>
+        <span class="sb-item-label">Estoque EPI</span>
+        <span class="sb-item-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </span>
+      </button>
       <button class="sb-item" data-page="notificacoes">
         <span class="sb-item-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
@@ -146,16 +149,6 @@
             </div>
             <div class="stat-value" id="epi-fichas-count">0</div>
             <div class="stat-sub">sem fichas cadastradas</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-top">
-              <span class="stat-label">Colaboradores</span>
-              <div class="stat-icon green">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-              </div>
-            </div>
-            <div class="stat-value" id="epi-colab-count">0</div>
-            <div class="stat-sub">aguardando cadastro</div>
           </div>
         </div>
 
@@ -277,9 +270,9 @@
           </div>
           <div class="page-hero-text">
             <h1>Ficha de Clientes</h1>
-            <p>Cadastro e gestão de clientes da empresa</p>
+            <p>Cadastro e gestão de clientes e obras em um único fluxo</p>
           </div>
-          <div class="page-hero-badge">Cadastros</div>
+          <div class="page-hero-badge">Clientes + Obras</div>
         </div>
 
         <div class="stats-row">
@@ -295,23 +288,13 @@
           </div>
           <div class="stat-card">
             <div class="stat-top">
-              <span class="stat-label">Novos este Mês</span>
+              <span class="stat-label">Obras Cadastradas</span>
               <div class="stat-icon green">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
               </div>
             </div>
-            <div class="stat-value">0</div>
-            <div class="stat-sub">neste mês</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-top">
-              <span class="stat-label">Total Histórico</span>
-              <div class="stat-icon green">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-              </div>
-            </div>
-            <div class="stat-value" id="clientes-historico">0</div>
-            <div class="stat-sub">total histórico</div>
+            <div class="stat-value" id="obras-count">0</div>
+            <div class="stat-sub">atribuídas aos clientes</div>
           </div>
         </div>
 
@@ -367,115 +350,39 @@
           <div class="card-header"><h2 class="card-title">Clientes Cadastrados</h2></div>
           <div id="clientes-list"></div>
         </div>
-      </section>
-
-      <section class="page" id="page-obras">
-        <div class="page-hero">
-          <div class="page-hero-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
-          </div>
-          <div class="page-hero-text">
-            <h1>Cadastro de Obra</h1>
-            <p>Registre e gerencie as obras da empresa</p>
-          </div>
-          <div class="page-hero-badge">Obras</div>
-        </div>
-
-        <div class="stats-row">
-          <div class="stat-card highlight">
-            <div class="stat-top">
-              <span class="stat-label">Em Andamento</span>
-              <div class="stat-icon orange">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              </div>
-            </div>
-            <div class="stat-value" id="obras-count">0</div>
-            <div class="stat-sub">obras ativas</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-top">
-              <span class="stat-label">Concluídas</span>
-              <div class="stat-icon green">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              </div>
-            </div>
-            <div class="stat-value" id="obras-historico">0</div>
-            <div class="stat-sub">total histórico</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-top">
-              <span class="stat-label">Próx. Entrega</span>
-              <div class="stat-icon green">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              </div>
-            </div>
-            <div class="stat-value">-</div>
-            <div class="stat-sub">nenhuma entrega prevista</div>
-          </div>
-        </div>
-
-        <div class="card">
+        <div class="card" id="obra-cadastro-card">
           <div class="card-header">
-            <h2 class="card-title">Dados da Obra</h2>
+            <h2 class="card-title">Cadastro de Obra por Cliente</h2>
+            <span class="card-hint" id="obra-cadastro-hint">Selecione um cliente para cadastrar uma obra</span>
           </div>
           <div class="field">
             <label class="field-label">Descrição da Obra</label>
-            <input type="text" class="field-input" id="obra-descricao" placeholder="Ex: Reforma residencial — Setor Sul, Bloco B">
+            <input type="text" class="field-input obra-field" id="obra-descricao" placeholder="Ex: Reforma residencial — Setor Sul, Bloco B">
           </div>
           <div class="form-row">
-            <div class="field">
-              <label class="field-label">Cliente Responsável</label>
-              <select class="field-input field-select" id="obra-cliente">
-                <option value="">Selecione um cliente...</option>
-              </select>
-            </div>
             <div class="field">
               <label class="field-label">Data de Entrega</label>
-              <input type="date" class="field-input" id="obra-data">
+              <input type="date" class="field-input obra-field" id="obra-data">
             </div>
-          </div>
-          <div class="form-row">
             <div class="field">
               <label class="field-label">Valor do Contrato</label>
-              <input type="text" class="field-input" id="obra-valor" placeholder="R$ 0,00">
-            </div>
-            <div class="field">
-              <label class="field-label">Endereço da Obra</label>
-              <input type="text" class="field-input" id="obra-endereco" placeholder="Rua e número da obra">
+              <input type="text" class="field-input obra-field" id="obra-valor" placeholder="R$ 0,00">
             </div>
           </div>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title">Sistemas da Obra</h2>
-            <span class="card-hint">Adicione os sistemas que compõem esta obra</span>
+          <div class="field">
+            <label class="field-label">Endereço da Obra</label>
+            <input type="text" class="field-input obra-field" id="obra-endereco" placeholder="Rua e número da obra">
           </div>
-          <div class="sistemas-box" id="sistemas-box">
-            <div class="sistemas-empty" id="sistemas-empty">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              <span>Nenhum sistema adicionado</span>
-            </div>
+          <div class="form-actions">
+            <button class="btn-primary" id="btn-save-obra">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Cadastrar Obra
+            </button>
           </div>
-          <button class="add-row-btn" id="add-sistema-btn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Adicionar Sistema
-          </button>
         </div>
-
-        <div class="form-actions">
-          <button class="btn-primary" id="btn-save-obra">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-            Cadastrar Obra
-          </button>
-          <button class="btn-ghost" id="btn-view-obras">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            Ver Obras Cadastradas
-          </button>
-        </div>
-        <div class="card" id="obras-list-card" style="display:none">
-          <div class="card-header"><h2 class="card-title">Obras Cadastradas</h2></div>
-          <div id="obras-list"></div>
+        <div class="card" id="obras-list-card">
+          <div class="card-header"><h2 class="card-title">Obras do Cliente Selecionado</h2></div>
+          <div id="obras-list"><p class="stat-sub">Selecione um cliente para visualizar as obras.</p></div>
         </div>
       </section>
 
@@ -593,18 +500,47 @@
       </section>
 
       <section class="page" id="page-notificacoes">
-        <div class="page-hero">
-          <div class="page-hero-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
-          </div>
-          <div class="page-hero-text">
-            <h1>Notificações</h1>
-            <p>Alertas e atualizações importantes do sistema</p>
-          </div>
+        <div class="page-header-inline">
+          <h2>Notificações</h2>
           <div class="page-hero-badge urgent" id="notificacoes-badge">0 não lidas</div>
         </div>
-
         <div class="notif-list" id="notif-list"></div>
+      </section>
+
+      <section class="page" id="page-estoque">
+        <div class="page-header-inline">
+          <h2>Controle de Estoque de EPIs</h2>
+        </div>
+        <div class="stats-row">
+          <div class="stat-card highlight">
+            <div class="stat-top">
+              <span class="stat-label">Estoque Geral</span>
+            </div>
+            <div class="stat-value" id="estoque-total">0</div>
+            <div class="stat-sub">somatório total de EPIs</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top">
+              <span class="stat-label">Em Uso</span>
+            </div>
+            <div class="stat-value" id="estoque-uso">0</div>
+            <div class="stat-sub">EPIs atualmente utilizados</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top">
+              <span class="stat-label">Não está em Uso</span>
+            </div>
+            <div class="stat-value" id="estoque-nao-uso">0</div>
+            <div class="stat-sub">estoque reservado/disponível</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Estoque disponível consolidado</h2>
+            <span class="card-step"><span id="estoque-disponivel">0</span> disponíveis</span>
+          </div>
+          <div id="estoque-lista"></div>
+        </div>
       </section>
 
     </main>
@@ -642,15 +578,32 @@
 const pages = {
   'epi': 'Ficha de EPI',
   'clientes': 'Ficha de Clientes',
-  'obras': 'Cadastro de Obra',
   'documentos': 'Documentos da Obra',
+  'estoque': 'Estoque de EPIs',
   'notificacoes': 'Notificações'
 };
+
 const state = {
   clientes: [],
   obras: [],
   epiFichas: [],
-  notifications: []
+  notifications: [],
+  selectedClienteIndex: null,
+  sidebarCollapsed: false,
+  estoqueEpis: [
+    { nome: 'Capacete de segurança', total: 32, emUso: 20 },
+    { nome: 'Óculos de segurança', total: 28, emUso: 16 },
+    { nome: 'Protetor facial', total: 20, emUso: 9 },
+    { nome: 'Protetor auricular', total: 24, emUso: 11 },
+    { nome: 'Luvas de borracha', total: 36, emUso: 18 },
+    { nome: 'Luvas de vaqueta', total: 54, emUso: 30 },
+    { nome: 'Botas de segurança', total: 40, emUso: 18 },
+    { nome: 'Máscara PFF2', total: 75, emUso: 44 },
+    { nome: 'Perneiras', total: 18, emUso: 7 },
+    { nome: 'Uniforme de trabalho', total: 60, emUso: 26 },
+    { nome: 'Cinto paraquedista', total: 14, emUso: 6 },
+    { nome: 'Trava-quedas retrátil', total: 10, emUso: 4 }
+  ]
 };
 
 function showPage(id) {
@@ -666,10 +619,17 @@ function toggleTheme() {
   localStorage.setItem('theme', isLight ? 'light' : 'dark');
 }
 
+function toggleSidebar() {
+  state.sidebarCollapsed = !state.sidebarCollapsed;
+  document.querySelector('.app').classList.toggle('sidebar-collapsed', state.sidebarCollapsed);
+}
+
 if (localStorage.getItem('theme') === 'light') {
   document.body.classList.add('light-theme');
 }
+
 document.getElementById('theme-toggle-btn').addEventListener('click', toggleTheme);
+document.getElementById('tb-collapse-btn').addEventListener('click', toggleSidebar);
 
 document.querySelectorAll('.sb-item, [data-page]').forEach(el => {
   el.addEventListener('click', function() {
@@ -678,12 +638,76 @@ document.querySelectorAll('.sb-item, [data-page]').forEach(el => {
   });
 });
 
-document.querySelectorAll('.epi-item').forEach(item => {
-  item.addEventListener('click', () => {
+function clearFieldErrors(inputs) {
+  inputs.forEach(input => {
+    const field = input.closest('.field');
+    if (field) field.classList.remove('field-error');
+  });
+}
+
+function validateRequiredFields(inputs) {
+  let valid = true;
+  clearFieldErrors(inputs);
+  inputs.forEach(input => {
+    const value = input.value.trim();
+    if (!value) {
+      valid = false;
+      const field = input.closest('.field');
+      if (field) field.classList.add('field-error');
+    }
+  });
+  return valid;
+}
+
+document.querySelectorAll('.field-input').forEach(input => {
+  input.addEventListener('input', () => {
+    if (input.value.trim()) {
+      const field = input.closest('.field');
+      if (field) field.classList.remove('field-error');
+    }
+  });
+});
+
+function getTrashIconMarkup() {
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>';
+}
+
+function removeEpiByName(name) {
+  state.estoqueEpis = state.estoqueEpis.filter(epi => epi.nome.toLowerCase() !== name.toLowerCase());
+  document.querySelectorAll('.epi-item').forEach(item => {
+    if ((item.dataset.name || '').toLowerCase() === name.toLowerCase()) {
+      item.remove();
+    }
+  });
+  updateEpiCount();
+  renderEstoque();
+  showToast(`"${name}" removido da lista de EPIs.`, 'success');
+}
+
+function decorateEpiItem(item) {
+  if (!item || item.dataset.decorated === 'true') return;
+  item.dataset.decorated = 'true';
+  item.addEventListener('click', event => {
+    if (event.target.closest('.epi-remove-btn')) return;
     item.classList.toggle('checked');
     updateEpiCount();
   });
-});
+
+  const removeBtn = document.createElement('button');
+  removeBtn.className = 'epi-remove-btn';
+  removeBtn.type = 'button';
+  removeBtn.title = 'Excluir EPI';
+  removeBtn.setAttribute('aria-label', `Excluir ${item.dataset.name || 'EPI'}`);
+  removeBtn.innerHTML = getTrashIconMarkup();
+  removeBtn.addEventListener('click', event => {
+    event.stopPropagation();
+    const epiName = item.dataset.name || item.querySelector('span')?.textContent || 'EPI';
+    removeEpiByName(epiName);
+  });
+  item.appendChild(removeBtn);
+}
+
+document.querySelectorAll('.epi-item').forEach(decorateEpiItem);
 
 function updateEpiCount() {
   document.getElementById('epi-count').textContent =
@@ -697,15 +721,18 @@ document.getElementById('add-epi-btn').addEventListener('click', () => {
 });
 
 document.getElementById('btn-save-epi').addEventListener('click', () => {
+  const epiInputs = [...document.querySelectorAll('#page-epi .field-input')];
+  if (!validateRequiredFields(epiInputs)) {
+    return showToast('A ficha não foi cadastrada pois todos os campos precisam ser preenchidos.', 'error');
+  }
+
   const colaborador = document.querySelector('#page-epi input[type="text"]').value.trim();
-  if (!colaborador) return showToast('Preencha o nome do colaborador para salvar a ficha.');
   const selectedEpis = [...document.querySelectorAll('.epi-item.checked span')].map(el => el.textContent);
   state.epiFichas.push({ colaborador, selectedEpis, data: new Date().toLocaleDateString('pt-BR') });
   document.getElementById('epi-fichas-count').textContent = state.epiFichas.length;
-  document.getElementById('epi-colab-count').textContent = state.epiFichas.length;
   renderEpiList();
-  addNotification('EPI', `Ficha de EPI cadastrada para ${colaborador}.`);
-  showToast('Ficha de EPI cadastrada com sucesso!');
+  addNotification('EPI', `Ficha de EPI cadastrada para ${colaborador}.`, 'epi', '#epi-list-card');
+  showToast('Cadastro de ficha de EPI realizado com sucesso!', 'success');
 });
 
 function closeModal() {
@@ -718,11 +745,16 @@ function confirmAddEpi() {
   const grid = document.getElementById('epi-grid');
   const div = document.createElement('div');
   div.className = 'epi-item';
+  div.dataset.name = v;
   div.innerHTML = '<div class="epi-cb"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>' + v + '</span>';
-  div.addEventListener('click', () => { div.classList.toggle('checked'); updateEpiCount(); });
+  decorateEpiItem(div);
   grid.appendChild(div);
+  if (!state.estoqueEpis.find(item => item.nome.toLowerCase() === v.toLowerCase())) {
+    state.estoqueEpis.push({ nome: v, total: 0, emUso: 0 });
+    renderEstoque();
+  }
   closeModal();
-  showToast('"' + v + '" adicionado com sucesso!');
+  showToast('"' + v + '" adicionado com sucesso!', 'success');
 }
 
 document.getElementById('epi-modal').addEventListener('click', function(e) {
@@ -731,17 +763,6 @@ document.getElementById('epi-modal').addEventListener('click', function(e) {
 
 document.getElementById('new-epi-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') confirmAddEpi();
-});
-
-document.getElementById('add-sistema-btn').addEventListener('click', () => {
-  const box = document.getElementById('sistemas-box');
-  const empty = document.getElementById('sistemas-empty');
-  if (empty) empty.remove();
-  const row = document.createElement('div');
-  row.className = 'sistema-row';
-  row.innerHTML = '<input type="text" class="field-input" placeholder="Nome do sistema (ex: Elétrico, Hidráulico, Estrutural...)"><button class="sistema-del" onclick="this.parentElement.remove()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
-  box.appendChild(row);
-  row.querySelector('input').focus();
 });
 
 function toggleDocCheck(el) {
@@ -800,59 +821,130 @@ function renderEpiList() {
   );
 }
 
-function updateClienteOptions() {
-  const obraCliente = document.getElementById('obra-cliente');
-  obraCliente.innerHTML = '<option value="">Selecione um cliente...</option>' +
-    state.clientes.map((c, i) => `<option value="${i}">${c.nome}</option>`).join('');
+function renderClientesList() {
+  const list = document.getElementById('clientes-list');
+  if (!state.clientes.length) {
+    list.innerHTML = '<p class="stat-sub">Nenhum cliente cadastrado.</p>';
+    return;
+  }
+
+  list.innerHTML = state.clientes.map((cliente, idx) => {
+    const obrasDoCliente = state.obras.filter(obra => obra.clienteIndex === idx);
+    const activeClass = state.selectedClienteIndex === idx ? 'cliente-item-selected' : '';
+    return `<button class="file-item cliente-item ${activeClass}" onclick="selectCliente(${idx})"><div class="file-info"><span class="file-name">${cliente.nome}</span><span class="file-size">${cliente.documento} • ${obrasDoCliente.length} obra(s)</span></div></button>`;
+  }).join('');
+}
+
+function renderObrasDoCliente() {
+  const list = document.getElementById('obras-list');
+  if (state.selectedClienteIndex === null) {
+    list.innerHTML = '<p class="stat-sub">Selecione um cliente para visualizar as obras.</p>';
+    return;
+  }
+  const obras = state.obras.filter(obra => obra.clienteIndex === state.selectedClienteIndex);
+  if (!obras.length) {
+    list.innerHTML = '<p class="stat-sub">Nenhuma obra cadastrada para este cliente.</p>';
+    return;
+  }
+  list.innerHTML = obras.map(o =>
+    `<div class="file-item"><div class="file-info"><span class="file-name">${o.descricao}</span><span class="file-size">Entrega: ${o.data} • ${o.valor} • ${o.endereco}</span></div></div>`
+  ).join('');
 }
 
 function updateObraOptions() {
   const docObra = document.getElementById('documento-obra');
   docObra.innerHTML = '<option value="">Selecione uma obra...</option>' +
-    state.obras.map((o, i) => `<option value="${i}">${o.descricao}</option>`).join('');
+    state.obras.map((o, i) => `<option value="${i}">${o.descricao} — ${o.clienteNome}</option>`).join('');
 }
 
+function updateClienteCards() {
+  const name = state.selectedClienteIndex === null
+    ? 'Selecione um cliente para cadastrar uma obra'
+    : `Cliente selecionado: ${state.clientes[state.selectedClienteIndex].nome}`;
+  document.getElementById('obra-cadastro-hint').textContent = name;
+}
+
+function selectCliente(index) {
+  state.selectedClienteIndex = index;
+  renderClientesList();
+  renderObrasDoCliente();
+  updateClienteCards();
+}
+window.selectCliente = selectCliente;
+
 document.getElementById('btn-save-cliente').addEventListener('click', () => {
+  const clienteInputs = [
+    document.getElementById('cliente-nome'),
+    document.getElementById('cliente-doc-numero'),
+    document.getElementById('cliente-telefone'),
+    document.getElementById('cliente-email'),
+    document.getElementById('cliente-endereco')
+  ];
+
+  if (!validateRequiredFields(clienteInputs)) {
+    return showToast('O cliente não foi cadastrado pois todos os campos precisam ser preenchidos.', 'error');
+  }
+
   const nome = document.getElementById('cliente-nome').value.trim();
-  if (!nome) return showToast('Informe o nome do cliente.');
   const cliente = {
     nome,
     documento: `${document.getElementById('cliente-doc-tipo').value}: ${document.getElementById('cliente-doc-numero').value.trim()}`,
     telefone: document.getElementById('cliente-telefone').value.trim(),
-    email: document.getElementById('cliente-email').value.trim()
+    email: document.getElementById('cliente-email').value.trim(),
+    endereco: document.getElementById('cliente-endereco').value.trim()
   };
+
   state.clientes.push(cliente);
   document.getElementById('clientes-count').textContent = state.clientes.length;
-  document.getElementById('clientes-historico').textContent = state.clientes.length;
-  renderList('clientes-list', state.clientes, c =>
-    `<div class="file-item"><div class="file-info"><span class="file-name">${c.nome}</span><span class="file-size">${c.documento}${c.telefone ? ' • ' + c.telefone : ''}</span></div></div>`
-  );
-  updateClienteOptions();
-  addNotification('Clientes', `Novo cliente cadastrado: ${nome}.`);
-  showToast('Cliente cadastrado com sucesso!');
+  renderClientesList();
+  addNotification('Clientes', `Novo cliente cadastrado: ${nome}.`, 'clientes', '#clientes-list-card');
+  showToast('Cadastro de cliente realizado com sucesso!', 'success');
+
+  if (state.selectedClienteIndex === null) {
+    selectCliente(state.clientes.length - 1);
+  }
 });
 
 document.getElementById('btn-save-obra').addEventListener('click', () => {
-  const descricao = document.getElementById('obra-descricao').value.trim();
-  if (!descricao) return showToast('Preencha a descrição da obra.');
-  const clienteNome = document.getElementById('obra-cliente').selectedOptions[0]?.textContent || 'Sem cliente';
-  const obra = { descricao, clienteNome, data: document.getElementById('obra-data').value || '-' };
+  if (state.selectedClienteIndex === null) {
+    return showToast('Selecione um cliente para cadastrar a obra.', 'error');
+  }
+
+  const obraInputs = [
+    document.getElementById('obra-descricao'),
+    document.getElementById('obra-data'),
+    document.getElementById('obra-valor'),
+    document.getElementById('obra-endereco')
+  ];
+
+  if (!validateRequiredFields(obraInputs)) {
+    return showToast('A obra não foi cadastrada pois todos os campos precisam ser preenchidos.', 'error');
+  }
+
+  const obra = {
+    descricao: document.getElementById('obra-descricao').value.trim(),
+    data: document.getElementById('obra-data').value,
+    valor: document.getElementById('obra-valor').value.trim(),
+    endereco: document.getElementById('obra-endereco').value.trim(),
+    clienteIndex: state.selectedClienteIndex,
+    clienteNome: state.clientes[state.selectedClienteIndex].nome
+  };
+
   state.obras.push(obra);
   document.getElementById('obras-count').textContent = state.obras.length;
-  document.getElementById('obras-historico').textContent = state.obras.length;
-  renderList('obras-list', state.obras, o =>
-    `<div class="file-item"><div class="file-info"><span class="file-name">${o.descricao}</span><span class="file-size">${o.clienteNome} • Entrega: ${o.data}</span></div></div>`
-  );
+  renderObrasDoCliente();
+  renderClientesList();
   updateObraOptions();
-  addNotification('Obras', `Obra cadastrada: ${descricao}.`);
-  showToast('Obra cadastrada com sucesso!');
+  updateClienteCards();
+  addNotification('Obras', `Obra cadastrada para ${obra.clienteNome}: ${obra.descricao}.`, 'clientes', '#obras-list-card');
+  showToast('Cadastro de obra realizado com sucesso!', 'success');
 });
 
 document.getElementById('btn-update-docs').addEventListener('click', () => {
   const obra = document.getElementById('documento-obra').selectedOptions[0]?.textContent;
-  if (!document.getElementById('documento-obra').value) return showToast('Selecione uma obra para atualizar documentos.');
-  addNotification('Documentos', `Documentos atualizados para "${obra}".`);
-  showToast('Documentos atualizados com sucesso!');
+  if (!document.getElementById('documento-obra').value) return showToast('Selecione uma obra para atualizar documentos.', 'error');
+  addNotification('Documentos', `Documentos atualizados para "${obra}".`, 'documentos', '#documento-obra');
+  showToast('Documentos atualizados com sucesso!', 'success');
 });
 
 function toggleCard(cardId) {
@@ -861,18 +953,42 @@ function toggleCard(cardId) {
 }
 
 document.getElementById('btn-view-clientes').addEventListener('click', () => toggleCard('clientes-list-card'));
-document.getElementById('btn-view-obras').addEventListener('click', () => toggleCard('obras-list-card'));
 document.getElementById('btn-view-epi').addEventListener('click', () => toggleCard('epi-list-card'));
 
-function addNotification(tag, description) {
+function addNotification(tag, description, targetPage = 'notificacoes', targetSelector = '') {
   state.notifications.unshift({
     tag,
     description,
     time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-    unread: true
+    unread: true,
+    targetPage,
+    targetSelector
   });
   renderNotifications();
 }
+
+function markNotificationAsRead(index) {
+  if (!state.notifications[index]) return;
+  state.notifications[index].unread = false;
+  renderNotifications();
+}
+
+function openNotification(index) {
+  const notification = state.notifications[index];
+  if (!notification) return;
+  markNotificationAsRead(index);
+  showPage(notification.targetPage || 'notificacoes');
+  if (notification.targetSelector) {
+    const target = document.querySelector(notification.targetSelector);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      target.classList.add('section-focus');
+      setTimeout(() => target.classList.remove('section-focus'), 1500);
+    }
+  }
+}
+window.openNotification = openNotification;
+window.markNotificationAsRead = markNotificationAsRead;
 
 function renderNotifications() {
   const list = document.getElementById('notif-list');
@@ -884,23 +1000,98 @@ function renderNotifications() {
     list.innerHTML = '<div class="notif-item"><div class="notif-body"><p class="notif-desc">Sem notificações no momento.</p></div></div>';
     return;
   }
-  list.innerHTML = state.notifications.map(n => `
-    <div class="notif-item ${n.unread ? 'unread' : ''}">
-      <div class="notif-dot ${n.unread ? 'orange' : 'muted'}"></div>
+  list.innerHTML = state.notifications.map((n, index) => `
+    <button class="notif-item ${n.unread ? 'unread' : ''}" onclick="openNotification(${index})">
+      <div class="notif-dot ${n.unread ? 'orange' : 'muted'}" onclick="event.stopPropagation(); markNotificationAsRead(${index})"></div>
       <div class="notif-body">
         <div class="notif-top"><span class="notif-title">${n.tag}</span><span class="notif-time">${n.time}</span></div>
         <p class="notif-desc">${n.description}</p><span class="notif-tag">${n.tag}</span>
+      </div>
+    </button>
+  `).join('');
+}
+
+function renderEstoque() {
+  const total = state.estoqueEpis.reduce((sum, item) => sum + item.total, 0);
+  const emUso = state.estoqueEpis.reduce((sum, item) => sum + item.emUso, 0);
+  const naoUso = total - emUso;
+  const disponivel = naoUso;
+
+  document.getElementById('estoque-total').textContent = total;
+  document.getElementById('estoque-uso').textContent = emUso;
+  document.getElementById('estoque-nao-uso').textContent = naoUso;
+  document.getElementById('estoque-disponivel').textContent = disponivel;
+
+  document.getElementById('estoque-lista').innerHTML = state.estoqueEpis.map(item => `
+    <div class="file-item estoque-item">
+      <div class="file-info">
+        <span class="file-name">${item.nome}</span>
+        <span class="file-size">Total: ${item.total} • Em uso: ${item.emUso} • Disponível: ${item.total - item.emUso}</span>
+      </div>
+      <div class="estoque-controls">
+        <button class="estoque-remove-btn" data-action="remove" data-name="${item.nome}" aria-label="Excluir ${item.nome}">
+          ${getTrashIconMarkup()}
+        </button>
+        <button class="estoque-step-btn" data-action="decrease" data-name="${item.nome}" aria-label="Reduzir quantidade">-</button>
+        <input class="estoque-input" type="number" min="${item.emUso}" value="${item.total}" data-action="set" data-name="${item.nome}" aria-label="Quantidade total em estoque de ${item.nome}">
+        <button class="estoque-step-btn" data-action="increase" data-name="${item.nome}" aria-label="Aumentar quantidade">+</button>
       </div>
     </div>
   `).join('');
 }
 
+document.getElementById('estoque-lista').addEventListener('click', event => {
+  const removeBtn = event.target.closest('.estoque-remove-btn');
+  if (removeBtn) {
+    const nome = removeBtn.dataset.name;
+    if (nome) removeEpiByName(nome);
+    return;
+  }
+
+  const button = event.target.closest('.estoque-step-btn');
+  if (!button) return;
+
+  const nome = button.dataset.name;
+  const item = state.estoqueEpis.find(epi => epi.nome === nome);
+  if (!item) return;
+
+  const step = button.dataset.action === 'increase' ? 1 : -1;
+  item.total = Math.max(item.emUso, item.total + step);
+  renderEstoque();
+});
+
+document.getElementById('estoque-lista').addEventListener('change', event => {
+  const input = event.target.closest('.estoque-input');
+  if (!input) return;
+
+  const nome = input.dataset.name;
+  const item = state.estoqueEpis.find(epi => epi.nome === nome);
+  if (!item) return;
+
+  const requested = Number(input.value);
+  item.total = Number.isFinite(requested) ? Math.max(item.emUso, requested) : item.total;
+  renderEstoque();
+});
+
 renderNotifications();
+renderEstoque();
+updateClienteCards();
+renderClientesList();
+renderObrasDoCliente();
+
 let toastTimer;
-function showToast(msg) {
+function showToast(msg, type = 'success') {
   clearTimeout(toastTimer);
   const t = document.getElementById('toast');
+  const icon = t.querySelector('.toast-icon');
   document.getElementById('toast-msg').textContent = msg;
+  t.classList.remove('error');
+  if (type === 'error') {
+    t.classList.add('error');
+    icon.innerHTML = '<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>';
+  } else {
+    icon.innerHTML = '<polyline points="20 6 9 17 4 12"></polyline>';
+  }
   t.classList.add('show');
   toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
 }
