@@ -42,15 +42,6 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
         </span>
       </button>
-      <button class="sb-item" data-page="obras">
-        <span class="sb-item-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
-        </span>
-        <span class="sb-item-label">Obras</span>
-        <span class="sb-item-arrow">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-        </span>
-      </button>
     </nav>
 
     <div class="sb-section-label">Arquivos</div>
@@ -277,9 +268,9 @@
           </div>
           <div class="page-hero-text">
             <h1>Ficha de Clientes</h1>
-            <p>Cadastro e gestão de clientes da empresa</p>
+            <p>Cadastro e gestão de clientes e obras em um único fluxo</p>
           </div>
-          <div class="page-hero-badge">Cadastros</div>
+          <div class="page-hero-badge">Clientes + Obras</div>
         </div>
 
         <div class="stats-row">
@@ -295,23 +286,23 @@
           </div>
           <div class="stat-card">
             <div class="stat-top">
-              <span class="stat-label">Novos este Mês</span>
+              <span class="stat-label">Obras Cadastradas</span>
               <div class="stat-icon green">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
               </div>
             </div>
-            <div class="stat-value">0</div>
-            <div class="stat-sub">neste mês</div>
+            <div class="stat-value" id="obras-count">0</div>
+            <div class="stat-sub">atribuídas aos clientes</div>
           </div>
           <div class="stat-card">
             <div class="stat-top">
-              <span class="stat-label">Total Histórico</span>
+              <span class="stat-label">Cliente Selecionado</span>
               <div class="stat-icon green">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
               </div>
             </div>
-            <div class="stat-value" id="clientes-historico">0</div>
-            <div class="stat-sub">total histórico</div>
+            <div class="stat-value" id="cliente-obras-count">0</div>
+            <div class="stat-sub" id="cliente-obras-sub">selecione um cliente</div>
           </div>
         </div>
 
@@ -367,115 +358,39 @@
           <div class="card-header"><h2 class="card-title">Clientes Cadastrados</h2></div>
           <div id="clientes-list"></div>
         </div>
-      </section>
-
-      <section class="page" id="page-obras">
-        <div class="page-hero">
-          <div class="page-hero-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
-          </div>
-          <div class="page-hero-text">
-            <h1>Cadastro de Obra</h1>
-            <p>Registre e gerencie as obras da empresa</p>
-          </div>
-          <div class="page-hero-badge">Obras</div>
-        </div>
-
-        <div class="stats-row">
-          <div class="stat-card highlight">
-            <div class="stat-top">
-              <span class="stat-label">Em Andamento</span>
-              <div class="stat-icon orange">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              </div>
-            </div>
-            <div class="stat-value" id="obras-count">0</div>
-            <div class="stat-sub">obras ativas</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-top">
-              <span class="stat-label">Concluídas</span>
-              <div class="stat-icon green">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              </div>
-            </div>
-            <div class="stat-value" id="obras-historico">0</div>
-            <div class="stat-sub">total histórico</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-top">
-              <span class="stat-label">Próx. Entrega</span>
-              <div class="stat-icon green">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              </div>
-            </div>
-            <div class="stat-value">-</div>
-            <div class="stat-sub">nenhuma entrega prevista</div>
-          </div>
-        </div>
-
-        <div class="card">
+        <div class="card" id="obra-cadastro-card">
           <div class="card-header">
-            <h2 class="card-title">Dados da Obra</h2>
+            <h2 class="card-title">Cadastro de Obra por Cliente</h2>
+            <span class="card-hint" id="obra-cadastro-hint">Selecione um cliente para cadastrar uma obra</span>
           </div>
           <div class="field">
             <label class="field-label">Descrição da Obra</label>
-            <input type="text" class="field-input" id="obra-descricao" placeholder="Ex: Reforma residencial — Setor Sul, Bloco B">
+            <input type="text" class="field-input obra-field" id="obra-descricao" placeholder="Ex: Reforma residencial — Setor Sul, Bloco B">
           </div>
           <div class="form-row">
-            <div class="field">
-              <label class="field-label">Cliente Responsável</label>
-              <select class="field-input field-select" id="obra-cliente">
-                <option value="">Selecione um cliente...</option>
-              </select>
-            </div>
             <div class="field">
               <label class="field-label">Data de Entrega</label>
-              <input type="date" class="field-input" id="obra-data">
+              <input type="date" class="field-input obra-field" id="obra-data">
             </div>
-          </div>
-          <div class="form-row">
             <div class="field">
               <label class="field-label">Valor do Contrato</label>
-              <input type="text" class="field-input" id="obra-valor" placeholder="R$ 0,00">
-            </div>
-            <div class="field">
-              <label class="field-label">Endereço da Obra</label>
-              <input type="text" class="field-input" id="obra-endereco" placeholder="Rua e número da obra">
+              <input type="text" class="field-input obra-field" id="obra-valor" placeholder="R$ 0,00">
             </div>
           </div>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title">Sistemas da Obra</h2>
-            <span class="card-hint">Adicione os sistemas que compõem esta obra</span>
+          <div class="field">
+            <label class="field-label">Endereço da Obra</label>
+            <input type="text" class="field-input obra-field" id="obra-endereco" placeholder="Rua e número da obra">
           </div>
-          <div class="sistemas-box" id="sistemas-box">
-            <div class="sistemas-empty" id="sistemas-empty">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              <span>Nenhum sistema adicionado</span>
-            </div>
+          <div class="form-actions">
+            <button class="btn-primary" id="btn-save-obra">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Cadastrar Obra
+            </button>
           </div>
-          <button class="add-row-btn" id="add-sistema-btn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Adicionar Sistema
-          </button>
         </div>
-
-        <div class="form-actions">
-          <button class="btn-primary" id="btn-save-obra">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-            Cadastrar Obra
-          </button>
-          <button class="btn-ghost" id="btn-view-obras">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            Ver Obras Cadastradas
-          </button>
-        </div>
-        <div class="card" id="obras-list-card" style="display:none">
-          <div class="card-header"><h2 class="card-title">Obras Cadastradas</h2></div>
-          <div id="obras-list"></div>
+        <div class="card" id="obras-list-card">
+          <div class="card-header"><h2 class="card-title">Obras do Cliente Selecionado</h2></div>
+          <div id="obras-list"><p class="stat-sub">Selecione um cliente para visualizar as obras.</p></div>
         </div>
       </section>
 
@@ -642,15 +557,16 @@
 const pages = {
   'epi': 'Ficha de EPI',
   'clientes': 'Ficha de Clientes',
-  'obras': 'Cadastro de Obra',
   'documentos': 'Documentos da Obra',
   'notificacoes': 'Notificações'
 };
+
 const state = {
   clientes: [],
   obras: [],
   epiFichas: [],
-  notifications: []
+  notifications: [],
+  selectedClienteIndex: null
 };
 
 function showPage(id) {
@@ -669,12 +585,43 @@ function toggleTheme() {
 if (localStorage.getItem('theme') === 'light') {
   document.body.classList.add('light-theme');
 }
+
 document.getElementById('theme-toggle-btn').addEventListener('click', toggleTheme);
 
 document.querySelectorAll('.sb-item, [data-page]').forEach(el => {
   el.addEventListener('click', function() {
     const pg = this.getAttribute('data-page');
     if (pg) showPage(pg);
+  });
+});
+
+function clearFieldErrors(inputs) {
+  inputs.forEach(input => {
+    const field = input.closest('.field');
+    if (field) field.classList.remove('field-error');
+  });
+}
+
+function validateRequiredFields(inputs) {
+  let valid = true;
+  clearFieldErrors(inputs);
+  inputs.forEach(input => {
+    const value = input.value.trim();
+    if (!value) {
+      valid = false;
+      const field = input.closest('.field');
+      if (field) field.classList.add('field-error');
+    }
+  });
+  return valid;
+}
+
+document.querySelectorAll('.field-input').forEach(input => {
+  input.addEventListener('input', () => {
+    if (input.value.trim()) {
+      const field = input.closest('.field');
+      if (field) field.classList.remove('field-error');
+    }
   });
 });
 
@@ -697,15 +644,19 @@ document.getElementById('add-epi-btn').addEventListener('click', () => {
 });
 
 document.getElementById('btn-save-epi').addEventListener('click', () => {
+  const epiInputs = [...document.querySelectorAll('#page-epi .field-input')];
+  if (!validateRequiredFields(epiInputs)) {
+    return showToast('A ficha não foi cadastrada pois todos os campos precisam ser preenchidos.', 'error');
+  }
+
   const colaborador = document.querySelector('#page-epi input[type="text"]').value.trim();
-  if (!colaborador) return showToast('Preencha o nome do colaborador para salvar a ficha.');
   const selectedEpis = [...document.querySelectorAll('.epi-item.checked span')].map(el => el.textContent);
   state.epiFichas.push({ colaborador, selectedEpis, data: new Date().toLocaleDateString('pt-BR') });
   document.getElementById('epi-fichas-count').textContent = state.epiFichas.length;
   document.getElementById('epi-colab-count').textContent = state.epiFichas.length;
   renderEpiList();
   addNotification('EPI', `Ficha de EPI cadastrada para ${colaborador}.`);
-  showToast('Ficha de EPI cadastrada com sucesso!');
+  showToast('Cadastro de ficha de EPI realizado com sucesso!', 'success');
 });
 
 function closeModal() {
@@ -722,7 +673,7 @@ function confirmAddEpi() {
   div.addEventListener('click', () => { div.classList.toggle('checked'); updateEpiCount(); });
   grid.appendChild(div);
   closeModal();
-  showToast('"' + v + '" adicionado com sucesso!');
+  showToast('"' + v + '" adicionado com sucesso!', 'success');
 }
 
 document.getElementById('epi-modal').addEventListener('click', function(e) {
@@ -731,17 +682,6 @@ document.getElementById('epi-modal').addEventListener('click', function(e) {
 
 document.getElementById('new-epi-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') confirmAddEpi();
-});
-
-document.getElementById('add-sistema-btn').addEventListener('click', () => {
-  const box = document.getElementById('sistemas-box');
-  const empty = document.getElementById('sistemas-empty');
-  if (empty) empty.remove();
-  const row = document.createElement('div');
-  row.className = 'sistema-row';
-  row.innerHTML = '<input type="text" class="field-input" placeholder="Nome do sistema (ex: Elétrico, Hidráulico, Estrutural...)"><button class="sistema-del" onclick="this.parentElement.remove()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
-  box.appendChild(row);
-  row.querySelector('input').focus();
 });
 
 function toggleDocCheck(el) {
@@ -800,59 +740,138 @@ function renderEpiList() {
   );
 }
 
-function updateClienteOptions() {
-  const obraCliente = document.getElementById('obra-cliente');
-  obraCliente.innerHTML = '<option value="">Selecione um cliente...</option>' +
-    state.clientes.map((c, i) => `<option value="${i}">${c.nome}</option>`).join('');
+function renderClientesList() {
+  const list = document.getElementById('clientes-list');
+  if (!state.clientes.length) {
+    list.innerHTML = '<p class="stat-sub">Nenhum cliente cadastrado.</p>';
+    return;
+  }
+
+  list.innerHTML = state.clientes.map((cliente, idx) => {
+    const obrasDoCliente = state.obras.filter(obra => obra.clienteIndex === idx);
+    const activeClass = state.selectedClienteIndex === idx ? 'cliente-item-selected' : '';
+    return `<button class="file-item cliente-item ${activeClass}" onclick="selectCliente(${idx})"><div class="file-info"><span class="file-name">${cliente.nome}</span><span class="file-size">${cliente.documento} • ${obrasDoCliente.length} obra(s)</span></div></button>`;
+  }).join('');
+}
+
+function renderObrasDoCliente() {
+  const list = document.getElementById('obras-list');
+  if (state.selectedClienteIndex === null) {
+    list.innerHTML = '<p class="stat-sub">Selecione um cliente para visualizar as obras.</p>';
+    return;
+  }
+  const obras = state.obras.filter(obra => obra.clienteIndex === state.selectedClienteIndex);
+  if (!obras.length) {
+    list.innerHTML = '<p class="stat-sub">Nenhuma obra cadastrada para este cliente.</p>';
+    return;
+  }
+  list.innerHTML = obras.map(o =>
+    `<div class="file-item"><div class="file-info"><span class="file-name">${o.descricao}</span><span class="file-size">Entrega: ${o.data} • ${o.valor} • ${o.endereco}</span></div></div>`
+  ).join('');
 }
 
 function updateObraOptions() {
   const docObra = document.getElementById('documento-obra');
   docObra.innerHTML = '<option value="">Selecione uma obra...</option>' +
-    state.obras.map((o, i) => `<option value="${i}">${o.descricao}</option>`).join('');
+    state.obras.map((o, i) => `<option value="${i}">${o.descricao} — ${o.clienteNome}</option>`).join('');
 }
 
+function updateClienteCards() {
+  const name = state.selectedClienteIndex === null
+    ? 'Selecione um cliente para cadastrar uma obra'
+    : `Cliente selecionado: ${state.clientes[state.selectedClienteIndex].nome}`;
+  document.getElementById('obra-cadastro-hint').textContent = name;
+
+  const obrasDoCliente = state.selectedClienteIndex === null
+    ? 0
+    : state.obras.filter(obra => obra.clienteIndex === state.selectedClienteIndex).length;
+  document.getElementById('cliente-obras-count').textContent = obrasDoCliente;
+  document.getElementById('cliente-obras-sub').textContent = state.selectedClienteIndex === null
+    ? 'selecione um cliente'
+    : 'obras do cliente selecionado';
+}
+
+function selectCliente(index) {
+  state.selectedClienteIndex = index;
+  renderClientesList();
+  renderObrasDoCliente();
+  updateClienteCards();
+}
+window.selectCliente = selectCliente;
+
 document.getElementById('btn-save-cliente').addEventListener('click', () => {
+  const clienteInputs = [
+    document.getElementById('cliente-nome'),
+    document.getElementById('cliente-doc-numero'),
+    document.getElementById('cliente-telefone'),
+    document.getElementById('cliente-email'),
+    document.getElementById('cliente-endereco')
+  ];
+
+  if (!validateRequiredFields(clienteInputs)) {
+    return showToast('O cliente não foi cadastrado pois todos os campos precisam ser preenchidos.', 'error');
+  }
+
   const nome = document.getElementById('cliente-nome').value.trim();
-  if (!nome) return showToast('Informe o nome do cliente.');
   const cliente = {
     nome,
     documento: `${document.getElementById('cliente-doc-tipo').value}: ${document.getElementById('cliente-doc-numero').value.trim()}`,
     telefone: document.getElementById('cliente-telefone').value.trim(),
-    email: document.getElementById('cliente-email').value.trim()
+    email: document.getElementById('cliente-email').value.trim(),
+    endereco: document.getElementById('cliente-endereco').value.trim()
   };
+
   state.clientes.push(cliente);
   document.getElementById('clientes-count').textContent = state.clientes.length;
-  document.getElementById('clientes-historico').textContent = state.clientes.length;
-  renderList('clientes-list', state.clientes, c =>
-    `<div class="file-item"><div class="file-info"><span class="file-name">${c.nome}</span><span class="file-size">${c.documento}${c.telefone ? ' • ' + c.telefone : ''}</span></div></div>`
-  );
-  updateClienteOptions();
+  renderClientesList();
   addNotification('Clientes', `Novo cliente cadastrado: ${nome}.`);
-  showToast('Cliente cadastrado com sucesso!');
+  showToast('Cadastro de cliente realizado com sucesso!', 'success');
+
+  if (state.selectedClienteIndex === null) {
+    selectCliente(state.clientes.length - 1);
+  }
 });
 
 document.getElementById('btn-save-obra').addEventListener('click', () => {
-  const descricao = document.getElementById('obra-descricao').value.trim();
-  if (!descricao) return showToast('Preencha a descrição da obra.');
-  const clienteNome = document.getElementById('obra-cliente').selectedOptions[0]?.textContent || 'Sem cliente';
-  const obra = { descricao, clienteNome, data: document.getElementById('obra-data').value || '-' };
+  if (state.selectedClienteIndex === null) {
+    return showToast('Selecione um cliente para cadastrar a obra.', 'error');
+  }
+
+  const obraInputs = [
+    document.getElementById('obra-descricao'),
+    document.getElementById('obra-data'),
+    document.getElementById('obra-valor'),
+    document.getElementById('obra-endereco')
+  ];
+
+  if (!validateRequiredFields(obraInputs)) {
+    return showToast('A obra não foi cadastrada pois todos os campos precisam ser preenchidos.', 'error');
+  }
+
+  const obra = {
+    descricao: document.getElementById('obra-descricao').value.trim(),
+    data: document.getElementById('obra-data').value,
+    valor: document.getElementById('obra-valor').value.trim(),
+    endereco: document.getElementById('obra-endereco').value.trim(),
+    clienteIndex: state.selectedClienteIndex,
+    clienteNome: state.clientes[state.selectedClienteIndex].nome
+  };
+
   state.obras.push(obra);
   document.getElementById('obras-count').textContent = state.obras.length;
-  document.getElementById('obras-historico').textContent = state.obras.length;
-  renderList('obras-list', state.obras, o =>
-    `<div class="file-item"><div class="file-info"><span class="file-name">${o.descricao}</span><span class="file-size">${o.clienteNome} • Entrega: ${o.data}</span></div></div>`
-  );
+  renderObrasDoCliente();
+  renderClientesList();
   updateObraOptions();
-  addNotification('Obras', `Obra cadastrada: ${descricao}.`);
-  showToast('Obra cadastrada com sucesso!');
+  updateClienteCards();
+  addNotification('Obras', `Obra cadastrada para ${obra.clienteNome}: ${obra.descricao}.`);
+  showToast('Cadastro de obra realizado com sucesso!', 'success');
 });
 
 document.getElementById('btn-update-docs').addEventListener('click', () => {
   const obra = document.getElementById('documento-obra').selectedOptions[0]?.textContent;
-  if (!document.getElementById('documento-obra').value) return showToast('Selecione uma obra para atualizar documentos.');
+  if (!document.getElementById('documento-obra').value) return showToast('Selecione uma obra para atualizar documentos.', 'error');
   addNotification('Documentos', `Documentos atualizados para "${obra}".`);
-  showToast('Documentos atualizados com sucesso!');
+  showToast('Documentos atualizados com sucesso!', 'success');
 });
 
 function toggleCard(cardId) {
@@ -861,7 +880,6 @@ function toggleCard(cardId) {
 }
 
 document.getElementById('btn-view-clientes').addEventListener('click', () => toggleCard('clientes-list-card'));
-document.getElementById('btn-view-obras').addEventListener('click', () => toggleCard('obras-list-card'));
 document.getElementById('btn-view-epi').addEventListener('click', () => toggleCard('epi-list-card'));
 
 function addNotification(tag, description) {
@@ -896,11 +914,23 @@ function renderNotifications() {
 }
 
 renderNotifications();
+updateClienteCards();
+renderClientesList();
+renderObrasDoCliente();
+
 let toastTimer;
-function showToast(msg) {
+function showToast(msg, type = 'success') {
   clearTimeout(toastTimer);
   const t = document.getElementById('toast');
+  const icon = t.querySelector('.toast-icon');
   document.getElementById('toast-msg').textContent = msg;
+  t.classList.remove('error');
+  if (type === 'error') {
+    t.classList.add('error');
+    icon.innerHTML = '<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>';
+  } else {
+    icon.innerHTML = '<polyline points="20 6 9 17 4 12"></polyline>';
+  }
   t.classList.add('show');
   toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
 }

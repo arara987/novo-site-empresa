@@ -7,28 +7,28 @@
 }
 
 :root {
-  --g950: #040c05;
-  --g900: #071009;
-  --g800: #0d1c10;
-  --g750: #112115;
-  --g700: #162b1a;
-  --g600: #1d3823;
-  --g500: #265230;
-  --g400: #2e6638;
-  --g300: #3d8a4a;
-  --g200: #5ab568;
+  --g950: #001f1e;
+  --g900: #002b29;
+  --g800: #003533;
+  --g750: #003d3a;
+  --g700: #004643;
+  --g600: #0f5a56;
+  --g500: #1c6d69;
+  --g400: #2f827e;
+  --g300: #53a7a2;
+  --g200: #80c4c0;
   --o500: #e07020;
   --o400: #f07828;
   --o300: #f49050;
   --o200: #f8b080;
   --o100: #fde8d8;
-  --txt-bright: #e2f0e6;
-  --txt-main: #a8c8b0;
-  --txt-dim: #5e8866;
-  --txt-muted: #3a5a40;
-  --border: #1a2e1e;
-  --border-mid: #223828;
-  --border-hover: #2d4e34;
+  --txt-bright: #dbf4f2;
+  --txt-main: #9bcfcb;
+  --txt-dim: #76aaa6;
+  --txt-muted: #5f8f8b;
+  --border: #0e4e4b;
+  --border-mid: #1d6260;
+  --border-hover: #2f7874;
   --shadow-sm: 0 2px 8px rgba(0,0,0,0.4);
   --shadow-md: 0 8px 32px rgba(0,0,0,0.5);
   --shadow-lg: 0 20px 60px rgba(0,0,0,0.6);
@@ -43,23 +43,23 @@
 }
 
 body.light-theme {
-  --g950: #f4f7f5;
+  --g950: #f3f8f8;
   --g900: #ffffff;
-  --g800: #f8fbf8;
-  --g750: #f2f7f2;
-  --g700: #eaf2ea;
-  --g600: #d8e7d9;
-  --g500: #8bb493;
-  --g400: #679772;
-  --g300: #4d7d5a;
-  --g200: #2f5c3a;
-  --txt-bright: #122018;
-  --txt-main: #1f3527;
-  --txt-dim: #3c5b45;
-  --txt-muted: #5f7d66;
-  --border: #d8e6da;
-  --border-mid: #c8dbcb;
-  --border-hover: #9fbea5;
+  --g800: #eef6f5;
+  --g750: #e5f1ef;
+  --g700: #d6e9e7;
+  --g600: #bfdedb;
+  --g500: #8abdb9;
+  --g400: #5ea29d;
+  --g300: #3d7d79;
+  --g200: #004643;
+  --txt-bright: #0f2423;
+  --txt-main: #1d3d3b;
+  --txt-dim: #3f6664;
+  --txt-muted: #668583;
+  --border: #cfe2e0;
+  --border-mid: #bdd6d3;
+  --border-hover: #91b8b3;
   --shadow-sm: 0 2px 8px rgba(8, 28, 12, 0.08);
   --shadow-md: 0 8px 32px rgba(8, 28, 12, 0.12);
   --shadow-lg: 0 20px 60px rgba(8, 28, 12, 0.18);
@@ -704,6 +704,7 @@ a { text-decoration: none; color: inherit; }
   display: flex;
   flex-direction: column;
   margin-bottom: 16px;
+  position: relative;
 }
 
 .field:last-child { margin-bottom: 0; }
@@ -758,6 +759,23 @@ a { text-decoration: none; color: inherit; }
   resize: vertical;
   min-height: 100px;
   line-height: 1.6;
+}
+
+.field-error .field-input {
+  border-color: #e05858 !important;
+  box-shadow: 0 0 0 2px rgba(224, 88, 88, 0.16);
+}
+
+.field-error::after {
+  content: '';
+  position: absolute;
+  top: 34px;
+  right: 10px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #e05858;
+  box-shadow: 0 0 0 2px rgba(224, 88, 88, 0.18);
 }
 
 
@@ -1124,6 +1142,16 @@ a { text-decoration: none; color: inherit; }
 
 .file-item:hover { border-color: var(--border-hover); }
 
+.cliente-item {
+  width: 100%;
+  text-align: left;
+}
+
+.cliente-item-selected {
+  border-color: rgba(240,120,40,0.45);
+  background: linear-gradient(135deg, rgba(240,120,40,0.11), rgba(240,120,40,0.04));
+}
+
 .file-ext {
   width: 34px;
   height: 34px;
@@ -1372,6 +1400,14 @@ a { text-decoration: none; color: inherit; }
   height: 18px;
   stroke: var(--o400);
   flex-shrink: 0;
+}
+
+.toast.error {
+  border-left-color: #e05858;
+}
+
+.toast.error .toast-icon {
+  stroke: #e05858;
 }
 
 
