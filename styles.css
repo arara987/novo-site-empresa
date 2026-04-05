@@ -315,8 +315,8 @@ body.light-theme * {
 }
 
 .app.sidebar-collapsed .sidebar {
-  width: 82px;
-  min-width: 82px;
+  width: 108px;
+  min-width: 108px;
 }
 
 .app.sidebar-collapsed .sb-logo-text,
@@ -329,7 +329,7 @@ body.light-theme * {
 
 .app.sidebar-collapsed .sb-logo {
   justify-content: center;
-  padding-inline: 8px;
+  padding-inline: 12px;
 }
 
 .app.sidebar-collapsed .sb-collapse-btn {
@@ -337,13 +337,14 @@ body.light-theme * {
 }
 
 .app.sidebar-collapsed .sb-nav {
-  padding-inline: 8px;
+  padding-inline: 10px;
 }
 
 .app.sidebar-collapsed .sb-item {
   justify-content: center;
   gap: 0;
-  padding-inline: 8px;
+  padding-inline: 12px;
+  min-height: 46px;
 }
 
 .app.sidebar-collapsed .sb-user {
@@ -883,6 +884,8 @@ body.light-theme * {
   font-size: 13px;
   font-weight: 500;
   color: var(--txt-dim);
+  position: relative;
+  padding-right: 46px;
 }
 
 .epi-item:hover {
@@ -928,6 +931,34 @@ body.light-theme * {
 .epi-item.checked .epi-cb svg {
   opacity: 1;
   transform: scale(1);
+}
+
+.epi-remove-btn {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border-mid);
+  background: var(--g800);
+  color: var(--txt-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s ease;
+}
+
+.epi-remove-btn:hover {
+  color: #e05858;
+  border-color: rgba(220,60,60,0.4);
+  background: rgba(220,60,60,0.1);
+}
+
+.epi-remove-btn svg {
+  width: 14px;
+  height: 14px;
 }
 
 .add-row-btn {
@@ -1294,6 +1325,30 @@ body.light-theme * {
 .estoque-step-btn:hover {
   border-color: var(--border-hover);
   color: var(--txt-bright);
+}
+
+.estoque-remove-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border-mid);
+  background: var(--g800);
+  color: var(--txt-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s ease;
+}
+
+.estoque-remove-btn:hover {
+  color: #e05858;
+  border-color: rgba(220,60,60,0.4);
+  background: rgba(220,60,60,0.1);
+}
+
+.estoque-remove-btn svg {
+  width: 14px;
+  height: 14px;
 }
 
 .estoque-input {

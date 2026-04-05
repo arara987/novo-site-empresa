@@ -21,7 +21,7 @@
         <span>ENGENHARIA</span>
       </div>
       <button class="tb-icon-btn sb-collapse-btn" id="tb-collapse-btn" title="Retrair barra lateral" aria-label="Retrair barra lateral">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="m16 15-3-3 3-3"/></svg>
       </button>
     </div>
 
@@ -668,12 +668,46 @@ document.querySelectorAll('.field-input').forEach(input => {
   });
 });
 
-document.querySelectorAll('.epi-item').forEach(item => {
-  item.addEventListener('click', () => {
+function getTrashIconMarkup() {
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>';
+}
+
+function removeEpiByName(name) {
+  state.estoqueEpis = state.estoqueEpis.filter(epi => epi.nome.toLowerCase() !== name.toLowerCase());
+  document.querySelectorAll('.epi-item').forEach(item => {
+    if ((item.dataset.name || '').toLowerCase() === name.toLowerCase()) {
+      item.remove();
+    }
+  });
+  updateEpiCount();
+  renderEstoque();
+  showToast(`"${name}" removido da lista de EPIs.`, 'success');
+}
+
+function decorateEpiItem(item) {
+  if (!item || item.dataset.decorated === 'true') return;
+  item.dataset.decorated = 'true';
+  item.addEventListener('click', event => {
+    if (event.target.closest('.epi-remove-btn')) return;
     item.classList.toggle('checked');
     updateEpiCount();
   });
-});
+
+  const removeBtn = document.createElement('button');
+  removeBtn.className = 'epi-remove-btn';
+  removeBtn.type = 'button';
+  removeBtn.title = 'Excluir EPI';
+  removeBtn.setAttribute('aria-label', `Excluir ${item.dataset.name || 'EPI'}`);
+  removeBtn.innerHTML = getTrashIconMarkup();
+  removeBtn.addEventListener('click', event => {
+    event.stopPropagation();
+    const epiName = item.dataset.name || item.querySelector('span')?.textContent || 'EPI';
+    removeEpiByName(epiName);
+  });
+  item.appendChild(removeBtn);
+}
+
+document.querySelectorAll('.epi-item').forEach(decorateEpiItem);
 
 function updateEpiCount() {
   document.getElementById('epi-count').textContent =
@@ -711,8 +745,9 @@ function confirmAddEpi() {
   const grid = document.getElementById('epi-grid');
   const div = document.createElement('div');
   div.className = 'epi-item';
+  div.dataset.name = v;
   div.innerHTML = '<div class="epi-cb"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>' + v + '</span>';
-  div.addEventListener('click', () => { div.classList.toggle('checked'); updateEpiCount(); });
+  decorateEpiItem(div);
   grid.appendChild(div);
   if (!state.estoqueEpis.find(item => item.nome.toLowerCase() === v.toLowerCase())) {
     state.estoqueEpis.push({ nome: v, total: 0, emUso: 0 });
@@ -994,6 +1029,9 @@ function renderEstoque() {
         <span class="file-size">Total: ${item.total} • Em uso: ${item.emUso} • Disponível: ${item.total - item.emUso}</span>
       </div>
       <div class="estoque-controls">
+        <button class="estoque-remove-btn" data-action="remove" data-name="${item.nome}" aria-label="Excluir ${item.nome}">
+          ${getTrashIconMarkup()}
+        </button>
         <button class="estoque-step-btn" data-action="decrease" data-name="${item.nome}" aria-label="Reduzir quantidade">-</button>
         <input class="estoque-input" type="number" min="${item.emUso}" value="${item.total}" data-action="set" data-name="${item.nome}" aria-label="Quantidade total em estoque de ${item.nome}">
         <button class="estoque-step-btn" data-action="increase" data-name="${item.nome}" aria-label="Aumentar quantidade">+</button>
@@ -1003,6 +1041,13 @@ function renderEstoque() {
 }
 
 document.getElementById('estoque-lista').addEventListener('click', event => {
+  const removeBtn = event.target.closest('.estoque-remove-btn');
+  if (removeBtn) {
+    const nome = removeBtn.dataset.name;
+    if (nome) removeEpiByName(nome);
+    return;
+  }
+
   const button = event.target.closest('.estoque-step-btn');
   if (!button) return;
 
