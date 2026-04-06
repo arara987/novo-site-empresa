@@ -364,9 +364,42 @@
               <input type="text" class="field-input obra-field" id="obra-valor" placeholder="R$ 0,00" inputmode="numeric">
             </div>
           </div>
-          <div class="field">
-            <label class="field-label">Endereço da Obra</label>
-            <input type="text" class="field-input obra-field" id="obra-endereco" placeholder="Rua e número da obra">
+          <div class="card-subsection">
+            <h3 class="card-subtitle">Endereço da Obra</h3>
+            <div class="form-row">
+              <div class="field">
+                <label class="field-label">CEP</label>
+                <input type="text" class="field-input obra-field" id="obra-endereco-cep" placeholder="00000-000" inputmode="numeric" maxlength="9">
+              </div>
+              <div class="field">
+                <label class="field-label">Logradouro</label>
+                <input type="text" class="field-input obra-field" id="obra-endereco-logradouro" placeholder="Rua, avenida, alameda...">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="field">
+                <label class="field-label">Número</label>
+                <input type="text" class="field-input obra-field" id="obra-endereco-numero" placeholder="Ex: 125" inputmode="numeric">
+              </div>
+              <div class="field">
+                <label class="field-label">Complemento</label>
+                <input type="text" class="field-input obra-field" id="obra-endereco-complemento" placeholder="Ex: Bloco B, Sala 304">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="field">
+                <label class="field-label">Bairro</label>
+                <input type="text" class="field-input obra-field" id="obra-endereco-bairro" placeholder="Bairro">
+              </div>
+              <div class="field">
+                <label class="field-label">Cidade</label>
+                <input type="text" class="field-input obra-field" id="obra-endereco-cidade" placeholder="Cidade">
+              </div>
+              <div class="field" style="max-width:120px">
+                <label class="field-label">UF</label>
+                <input type="text" class="field-input obra-field" id="obra-endereco-uf" placeholder="UF" maxlength="2">
+              </div>
+            </div>
           </div>
           <div class="form-actions">
             <button class="btn-primary" id="btn-save-obra">
@@ -918,6 +951,10 @@ function formatCurrencyFromDigits(value) {
   return amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
+function buildAddressString(endereco) {
+  return `${endereco.logradouro}, ${endereco.numero}${endereco.complemento ? `, ${endereco.complemento}` : ''} — ${endereco.bairro}, ${endereco.cidade} - ${endereco.uf} (${endereco.cep})`;
+}
+
 function getBrazilHolidays(year) {
   const fixedHolidays = [
     `${year}-01-01`,
@@ -1079,6 +1116,14 @@ document.getElementById('cliente-endereco-uf').addEventListener('input', event =
   event.target.value = event.target.value.replace(/[^a-zA-Z]/g, '').toUpperCase().slice(0, 2);
 });
 
+document.getElementById('obra-endereco-cep').addEventListener('input', event => {
+  event.target.value = formatCep(event.target.value);
+});
+
+document.getElementById('obra-endereco-uf').addEventListener('input', event => {
+  event.target.value = event.target.value.replace(/[^a-zA-Z]/g, '').toUpperCase().slice(0, 2);
+});
+
 document.getElementById('obra-valor').addEventListener('input', event => {
   event.target.value = formatCurrencyFromDigits(event.target.value);
 });
@@ -1134,7 +1179,7 @@ document.getElementById('btn-save-cliente').addEventListener('click', () => {
     cidade: document.getElementById('cliente-endereco-cidade').value.trim(),
     uf: document.getElementById('cliente-endereco-uf').value.trim()
   };
-  const enderecoCompleto = `${endereco.logradouro}, ${endereco.numero}${endereco.complemento ? `, ${endereco.complemento}` : ''} — ${endereco.bairro}, ${endereco.cidade} - ${endereco.uf} (${endereco.cep})`;
+  const enderecoCompleto = buildAddressString(endereco);
 
   const cliente = {
     nome,
@@ -1170,7 +1215,12 @@ document.getElementById('btn-save-obra').addEventListener('click', () => {
     document.getElementById('obra-descricao'),
     document.getElementById('obra-data'),
     document.getElementById('obra-valor'),
-    document.getElementById('obra-endereco')
+    document.getElementById('obra-endereco-cep'),
+    document.getElementById('obra-endereco-logradouro'),
+    document.getElementById('obra-endereco-numero'),
+    document.getElementById('obra-endereco-bairro'),
+    document.getElementById('obra-endereco-cidade'),
+    document.getElementById('obra-endereco-uf')
   ];
 
   if (!validateRequiredFields(obraInputs)) {
@@ -1181,11 +1231,21 @@ document.getElementById('btn-save-obra').addEventListener('click', () => {
     return showToast('A data de entrega deve ser em dia útil e não pode ser feriado.', 'error');
   }
 
+  const enderecoObra = {
+    cep: document.getElementById('obra-endereco-cep').value.trim(),
+    logradouro: document.getElementById('obra-endereco-logradouro').value.trim(),
+    numero: document.getElementById('obra-endereco-numero').value.trim(),
+    complemento: document.getElementById('obra-endereco-complemento').value.trim(),
+    bairro: document.getElementById('obra-endereco-bairro').value.trim(),
+    cidade: document.getElementById('obra-endereco-cidade').value.trim(),
+    uf: document.getElementById('obra-endereco-uf').value.trim()
+  };
+
   const obra = {
     descricao: document.getElementById('obra-descricao').value.trim(),
     data: document.getElementById('obra-data').value,
     valor: document.getElementById('obra-valor').value.trim(),
-    endereco: document.getElementById('obra-endereco').value.trim(),
+    endereco: buildAddressString(enderecoObra),
     clienteIndex: state.selectedClienteIndex,
     clienteNome: state.clientes[state.selectedClienteIndex].nome
   };

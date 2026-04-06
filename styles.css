@@ -753,6 +753,20 @@ body.light-theme * {
   color: var(--txt-muted);
 }
 
+.card-subsection {
+  margin-top: 4px;
+}
+
+.card-subtitle {
+  margin: 0 0 14px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--txt-dim);
+}
+
 
 /* ─── FORM FIELDS ────────────────────────────────────────── */
 
