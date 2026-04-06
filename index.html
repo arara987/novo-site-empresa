@@ -256,21 +256,27 @@
           <div class="form-row">
             <div class="field">
               <label class="field-label">Tipo de Documento</label>
-              <select class="field-input field-select" id="cliente-doc-tipo">
-                <option>CPF</option>
-                <option>CNPJ</option>
-                <option>RG</option>
-              </select>
+              <div class="custom-select field-input" id="cliente-doc-select">
+                <button type="button" class="custom-select-trigger" id="cliente-doc-trigger" aria-haspopup="listbox" aria-expanded="false">
+                  <span id="cliente-doc-selected">CPF</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="custom-select-menu" id="cliente-doc-menu" role="listbox">
+                  <button type="button" class="custom-select-option selected" data-value="CPF" role="option" aria-selected="true">CPF</button>
+                  <button type="button" class="custom-select-option" data-value="CNPJ" role="option" aria-selected="false">CNPJ</button>
+                </div>
+              </div>
+              <input type="hidden" id="cliente-doc-tipo" value="CPF">
             </div>
             <div class="field">
               <label class="field-label">Número do Documento</label>
-              <input type="text" class="field-input" id="cliente-doc-numero" placeholder="000.000.000-00">
+              <input type="text" class="field-input" id="cliente-doc-numero" placeholder="000.000.000-00" inputmode="numeric" maxlength="11">
             </div>
           </div>
           <div class="form-row">
             <div class="field">
               <label class="field-label">Telefone</label>
-              <input type="tel" class="field-input" id="cliente-telefone" placeholder="(00) 00000-0000">
+              <input type="tel" class="field-input" id="cliente-telefone" placeholder="(00) 0000-0000" inputmode="numeric" maxlength="14">
             </div>
             <div class="field">
               <label class="field-label">E-mail</label>
@@ -303,6 +309,12 @@
             <span class="card-hint" id="obra-cadastro-hint">Selecione um cliente para cadastrar uma obra</span>
           </div>
           <div class="field">
+            <label class="field-label">Cliente Cadastrado</label>
+            <select class="field-input field-select obra-field" id="obra-cliente-select">
+              <option value="">Selecione um cliente...</option>
+            </select>
+          </div>
+          <div class="field">
             <label class="field-label">Descrição da Obra</label>
             <input type="text" class="field-input obra-field" id="obra-descricao" placeholder="Ex: Reforma residencial — Setor Sul, Bloco B">
           </div>
@@ -328,8 +340,8 @@
           </div>
         </div>
         <div class="card" id="obras-list-card">
-          <div class="card-header"><h2 class="card-title">Obras do Cliente Selecionado</h2></div>
-          <div id="obras-list"><p class="stat-sub">Selecione um cliente para visualizar as obras.</p></div>
+          <div class="card-header"><h2 class="card-title">Obras Cadastradas</h2></div>
+          <div id="obras-list"><p class="stat-sub">Nenhuma obra cadastrada.</p></div>
         </div>
       </section>
 
@@ -535,6 +547,8 @@ const state = {
   obras: [],
   notifications: [],
   selectedClienteIndex: null,
+  expandedClienteIndex: null,
+  expandedObraIndex: null,
   sidebarCollapsed: false,
   estoqueEpis: [
     { nome: 'Capacete de segurança', total: 32, emUso: 20 },
@@ -749,30 +763,65 @@ function renderClientesList() {
   list.innerHTML = state.clientes.map((cliente, idx) => {
     const obrasDoCliente = state.obras.filter(obra => obra.clienteIndex === idx);
     const activeClass = state.selectedClienteIndex === idx ? 'cliente-item-selected' : '';
-    return `<button class="file-item cliente-item ${activeClass}" onclick="selectCliente(${idx})"><div class="file-info"><span class="file-name">${cliente.nome}</span><span class="file-size">${cliente.documento} • ${obrasDoCliente.length} obra(s)</span></div></button>`;
+    const expandedClass = state.expandedClienteIndex === idx ? 'expanded' : '';
+    return `<div class="accordion-item">
+      <button class="file-item cliente-item ${activeClass}" onclick="toggleClienteDetails(${idx})">
+        <div class="file-info">
+          <span class="file-name">${cliente.nome}</span>
+          <span class="file-size">${cliente.documento} • ${obrasDoCliente.length} obra(s)</span>
+        </div>
+        <span class="accordion-chevron ${expandedClass}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 12 15 18 9"/></svg>
+        </span>
+      </button>
+      <div class="accordion-content ${expandedClass}">
+        <div class="accordion-content-inner">
+          <p><strong>Telefone:</strong> ${cliente.telefone}</p>
+          <p><strong>E-mail:</strong> ${cliente.email}</p>
+          <p><strong>Endereço:</strong> ${cliente.endereco}</p>
+        </div>
+      </div>
+    </div>`;
   }).join('');
 }
 
 function renderObrasDoCliente() {
   const list = document.getElementById('obras-list');
-  if (state.selectedClienteIndex === null) {
-    list.innerHTML = '<p class="stat-sub">Selecione um cliente para visualizar as obras.</p>';
+  if (!state.obras.length) {
+    list.innerHTML = '<p class="stat-sub">Nenhuma obra cadastrada.</p>';
     return;
   }
-  const obras = state.obras.filter(obra => obra.clienteIndex === state.selectedClienteIndex);
-  if (!obras.length) {
-    list.innerHTML = '<p class="stat-sub">Nenhuma obra cadastrada para este cliente.</p>';
-    return;
-  }
-  list.innerHTML = obras.map(o =>
-    `<div class="file-item"><div class="file-info"><span class="file-name">${o.descricao}</span><span class="file-size">Entrega: ${o.data} • ${o.valor} • ${o.endereco}</span></div></div>`
-  ).join('');
+  list.innerHTML = state.obras.map((obra, idx) => {
+    const expandedClass = state.expandedObraIndex === idx ? 'expanded' : '';
+    return `<div class="accordion-item">
+      <button class="file-item cliente-item" onclick="toggleObraDetails(${idx})">
+        <div class="file-info">
+          <span class="file-name">${obra.descricao}</span>
+          <span class="file-size">${obra.clienteNome}</span>
+        </div>
+        <span class="accordion-chevron ${expandedClass}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 12 15 18 9"/></svg>
+        </span>
+      </button>
+      <div class="accordion-content ${expandedClass}">
+        <div class="accordion-content-inner">
+          <p><strong>Cliente:</strong> ${obra.clienteNome}</p>
+          <p><strong>Data de Entrega:</strong> ${obra.data}</p>
+          <p><strong>Valor:</strong> ${obra.valor}</p>
+          <p><strong>Endereço:</strong> ${obra.endereco}</p>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function updateObraOptions() {
   const docObra = document.getElementById('documento-obra');
+  const obraClienteSelect = document.getElementById('obra-cliente-select');
   docObra.innerHTML = '<option value="">Selecione uma obra...</option>' +
     state.obras.map((o, i) => `<option value="${i}">${o.descricao} — ${o.clienteNome}</option>`).join('');
+  obraClienteSelect.innerHTML = '<option value="">Selecione um cliente...</option>' +
+    state.clientes.map((cliente, idx) => `<option value="${idx}">${cliente.nome}</option>`).join('');
 }
 
 function updateClienteCards() {
@@ -784,11 +833,113 @@ function updateClienteCards() {
 
 function selectCliente(index) {
   state.selectedClienteIndex = index;
+  const obraClienteSelect = document.getElementById('obra-cliente-select');
+  if (obraClienteSelect) obraClienteSelect.value = String(index);
   renderClientesList();
-  renderObrasDoCliente();
   updateClienteCards();
 }
 window.selectCliente = selectCliente;
+
+function toggleClienteDetails(index) {
+  state.expandedClienteIndex = state.expandedClienteIndex === index ? null : index;
+  selectCliente(index);
+}
+window.toggleClienteDetails = toggleClienteDetails;
+
+function toggleObraDetails(index) {
+  state.expandedObraIndex = state.expandedObraIndex === index ? null : index;
+  renderObrasDoCliente();
+}
+window.toggleObraDetails = toggleObraDetails;
+
+const docTypeMasks = {
+  CPF: { maxDigits: 11, placeholder: '000.000.000-00' },
+  CNPJ: { maxDigits: 14, placeholder: '00.000.000/0000-00' }
+};
+
+function sanitizeDigits(value) {
+  return value.replace(/\D/g, '');
+}
+
+function applyDocType(type) {
+  const docInput = document.getElementById('cliente-doc-numero');
+  const selectedLabel = document.getElementById('cliente-doc-selected');
+  const hiddenType = document.getElementById('cliente-doc-tipo');
+  const config = docTypeMasks[type] || docTypeMasks.CPF;
+  hiddenType.value = type;
+  selectedLabel.textContent = type;
+  docInput.placeholder = config.placeholder;
+  docInput.maxLength = config.maxDigits;
+  docInput.value = sanitizeDigits(docInput.value).slice(0, config.maxDigits);
+}
+
+function setupCustomDocumentSelect() {
+  const select = document.getElementById('cliente-doc-select');
+  const trigger = document.getElementById('cliente-doc-trigger');
+  const menu = document.getElementById('cliente-doc-menu');
+  const options = Array.from(menu.querySelectorAll('.custom-select-option'));
+
+  const closeMenu = () => {
+    select.classList.remove('open');
+    trigger.setAttribute('aria-expanded', 'false');
+  };
+
+  trigger.addEventListener('click', event => {
+    event.stopPropagation();
+    const isOpen = select.classList.toggle('open');
+    trigger.setAttribute('aria-expanded', String(isOpen));
+  });
+
+  options.forEach(option => {
+    option.addEventListener('click', () => {
+      options.forEach(btn => {
+        btn.classList.remove('selected');
+        btn.setAttribute('aria-selected', 'false');
+      });
+      option.classList.add('selected');
+      option.setAttribute('aria-selected', 'true');
+      applyDocType(option.dataset.value);
+      closeMenu();
+    });
+  });
+
+  document.addEventListener('click', event => {
+    if (!select.contains(event.target)) closeMenu();
+  });
+}
+
+document.getElementById('cliente-doc-numero').addEventListener('input', event => {
+  const type = document.getElementById('cliente-doc-tipo').value;
+  const maxDigits = docTypeMasks[type].maxDigits;
+  event.target.value = sanitizeDigits(event.target.value).slice(0, maxDigits);
+});
+
+document.getElementById('cliente-telefone').addEventListener('input', event => {
+  const digits = sanitizeDigits(event.target.value).slice(0, 10);
+  if (!digits) {
+    event.target.value = '';
+    return;
+  }
+  let formatted = '';
+  if (digits.length <= 2) {
+    formatted = `(${digits}`;
+  } else if (digits.length <= 6) {
+    formatted = `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  } else {
+    formatted = `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+  }
+  event.target.value = formatted;
+});
+
+document.getElementById('obra-cliente-select').addEventListener('change', event => {
+  if (event.target.value === '') {
+    state.selectedClienteIndex = null;
+    updateClienteCards();
+    renderClientesList();
+    return;
+  }
+  selectCliente(Number(event.target.value));
+});
 
 document.getElementById('btn-save-cliente').addEventListener('click', () => {
   const clienteInputs = [
@@ -803,10 +954,21 @@ document.getElementById('btn-save-cliente').addEventListener('click', () => {
     return showToast('O cliente não foi cadastrado pois todos os campos precisam ser preenchidos.', 'error');
   }
 
+  const docType = document.getElementById('cliente-doc-tipo').value;
+  const docDigits = sanitizeDigits(document.getElementById('cliente-doc-numero').value);
+  if (docDigits.length !== docTypeMasks[docType].maxDigits) {
+    return showToast(`Informe um ${docType} com ${docTypeMasks[docType].maxDigits} números.`, 'error');
+  }
+
+  const phoneDigits = sanitizeDigits(document.getElementById('cliente-telefone').value);
+  if (phoneDigits.length !== 10) {
+    return showToast('Informe um telefone com DDD e 8 dígitos (formato: (00) 0000-0000).', 'error');
+  }
+
   const nome = document.getElementById('cliente-nome').value.trim();
   const cliente = {
     nome,
-    documento: `${document.getElementById('cliente-doc-tipo').value}: ${document.getElementById('cliente-doc-numero').value.trim()}`,
+    documento: `${docType}: ${docDigits}`,
     telefone: document.getElementById('cliente-telefone').value.trim(),
     email: document.getElementById('cliente-email').value.trim(),
     endereco: document.getElementById('cliente-endereco').value.trim()
@@ -815,6 +977,7 @@ document.getElementById('btn-save-cliente').addEventListener('click', () => {
   state.clientes.push(cliente);
   document.getElementById('clientes-count').textContent = state.clientes.length;
   renderClientesList();
+  updateObraOptions();
   addNotification('Clientes', `Novo cliente cadastrado: ${nome}.`, 'clientes', '#clientes-list-card');
   showToast('Cadastro de cliente realizado com sucesso!', 'success');
 
@@ -824,6 +987,11 @@ document.getElementById('btn-save-cliente').addEventListener('click', () => {
 });
 
 document.getElementById('btn-save-obra').addEventListener('click', () => {
+  const obraClienteSelect = document.getElementById('obra-cliente-select');
+  if (obraClienteSelect.value !== '') {
+    state.selectedClienteIndex = Number(obraClienteSelect.value);
+  }
+
   if (state.selectedClienteIndex === null) {
     return showToast('Selecione um cliente para cadastrar a obra.', 'error');
   }
@@ -993,9 +1161,12 @@ document.getElementById('estoque-lista').addEventListener('change', event => {
 renderNotifications();
 renderEstoque();
 updateEpiRegistradosCount();
+setupCustomDocumentSelect();
+applyDocType('CPF');
 updateClienteCards();
 renderClientesList();
 renderObrasDoCliente();
+updateObraOptions();
 
 let toastTimer;
 function showToast(msg, type = 'success') {
