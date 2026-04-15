@@ -1437,7 +1437,22 @@ body.light-theme * {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
   flex-shrink: 0;
+  justify-content: flex-end;
+}
+
+.estoque-control-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.estoque-control-label {
+  font-size: 11px;
+  color: var(--txt-muted);
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .estoque-step-btn {
@@ -1490,6 +1505,11 @@ body.light-theme * {
   text-align: center;
   font-size: 13px;
   padding: 0 6px;
+}
+
+.estoque-input-readonly {
+  opacity: 0.85;
+  cursor: default;
 }
 
 
