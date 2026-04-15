@@ -706,6 +706,9 @@ function decorateEpiItem(item) {
 }
 
 document.querySelectorAll('.epi-item').forEach(decorateEpiItem);
+const baseEpiList = Array.from(document.querySelectorAll('.epi-item'))
+  .map(item => (item.dataset.name || '').trim())
+  .filter(Boolean);
 
 function updateEpiRegistradosCount() {
   document.getElementById('epi-cadastrados-count').textContent =
@@ -729,8 +732,7 @@ function closeModal() {
 }
 
 function confirmAddEpi() {
-  // Garante persistência em CAIXA ALTA antes de salvar qualquer novo EPI.
-  const v = toUppercaseValue(document.getElementById('new-epi-input').value).trim();
+  const v = normalizeEpiName(document.getElementById('new-epi-input').value);
   if (!v) return;
   const grid = document.getElementById('epi-grid');
   const div = document.createElement('div');
@@ -756,17 +758,19 @@ document.getElementById('new-epi-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') confirmAddEpi();
 });
 
-function toUppercaseValue(value) {
-  return (value || '').toUpperCase();
+function normalizeEpiName(value) {
+  const normalized = (value || '').trim().toLowerCase();
+  if (!normalized) return '';
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1);
 }
 
-function applyRealtimeUppercase(inputElement) {
+function applyRealtimeCapitalization(inputElement) {
   if (!inputElement) return;
   inputElement.addEventListener('input', () => {
     const cursorPosition = inputElement.selectionStart;
-    const upperValue = toUppercaseValue(inputElement.value);
-    if (inputElement.value !== upperValue) {
-      inputElement.value = upperValue;
+    const normalizedValue = normalizeEpiName(inputElement.value);
+    if (inputElement.value !== normalizedValue) {
+      inputElement.value = normalizedValue;
       if (typeof cursorPosition === 'number') {
         inputElement.setSelectionRange(cursorPosition, cursorPosition);
       }
@@ -775,14 +779,43 @@ function applyRealtimeUppercase(inputElement) {
 }
 
 const newEpiInput = document.getElementById('new-epi-input');
-// Reutilizável: converte para caixa alta em tempo real durante o cadastro de EPI.
-applyRealtimeUppercase(newEpiInput);
+applyRealtimeCapitalization(newEpiInput);
 
-// RESET apenas limpa campos da ficha atual (UI), sem tocar em dados cadastrados.
 document.getElementById('btn-reset-epi-form').addEventListener('click', () => {
   newEpiInput.value = '';
   clearFieldErrors([newEpiInput]);
-  showToast('Campos da Ficha de EPI limpos.', 'success');
+
+  const grid = document.getElementById('epi-grid');
+  const currentEpis = Array.from(grid.querySelectorAll('.epi-item'))
+    .map(item => (item.dataset.name || item.querySelector('span')?.textContent || '').trim())
+    .filter(Boolean);
+
+  const mergedEpis = [...baseEpiList];
+  currentEpis.forEach(name => {
+    if (!mergedEpis.some(baseName => baseName.toLowerCase() === name.toLowerCase())) {
+      mergedEpis.push(name);
+    }
+  });
+
+  grid.innerHTML = '';
+  mergedEpis.forEach(name => {
+    const div = document.createElement('div');
+    div.className = 'epi-item';
+    div.dataset.name = name;
+    div.innerHTML = '<div class="epi-cb"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>' + name + '</span>';
+    decorateEpiItem(div);
+    grid.appendChild(div);
+  });
+
+  mergedEpis.forEach(name => {
+    if (!state.estoqueEpis.some(item => item.nome.toLowerCase() === name.toLowerCase())) {
+      state.estoqueEpis.push({ nome: name, total: 0, emUso: 0 });
+    }
+  });
+
+  updateEpiRegistradosCount();
+  renderEstoque();
+  showToast('Lista base de EPIs restaurada com sucesso.', 'success');
 });
 
 function toggleDocCheck(el) {
