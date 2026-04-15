@@ -203,6 +203,13 @@
         </div>
 
         <div class="form-actions">
+          <button class="btn-ghost" id="btn-reset-epi-form">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="1 4 1 10 7 10"></polyline>
+              <path d="M3.51 15a9 9 0 1 0 .49-9.36L1 10"></path>
+            </svg>
+            RESET
+          </button>
           <button class="btn-primary" id="btn-save-epi">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
             Atualizar Lista de EPIs
@@ -722,7 +729,8 @@ function closeModal() {
 }
 
 function confirmAddEpi() {
-  const v = document.getElementById('new-epi-input').value.trim();
+  // Garante persistência em CAIXA ALTA antes de salvar qualquer novo EPI.
+  const v = toUppercaseValue(document.getElementById('new-epi-input').value).trim();
   if (!v) return;
   const grid = document.getElementById('epi-grid');
   const div = document.createElement('div');
@@ -746,6 +754,35 @@ document.getElementById('epi-modal').addEventListener('click', function(e) {
 
 document.getElementById('new-epi-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') confirmAddEpi();
+});
+
+function toUppercaseValue(value) {
+  return (value || '').toUpperCase();
+}
+
+function applyRealtimeUppercase(inputElement) {
+  if (!inputElement) return;
+  inputElement.addEventListener('input', () => {
+    const cursorPosition = inputElement.selectionStart;
+    const upperValue = toUppercaseValue(inputElement.value);
+    if (inputElement.value !== upperValue) {
+      inputElement.value = upperValue;
+      if (typeof cursorPosition === 'number') {
+        inputElement.setSelectionRange(cursorPosition, cursorPosition);
+      }
+    }
+  });
+}
+
+const newEpiInput = document.getElementById('new-epi-input');
+// Reutilizável: converte para caixa alta em tempo real durante o cadastro de EPI.
+applyRealtimeUppercase(newEpiInput);
+
+// RESET apenas limpa campos da ficha atual (UI), sem tocar em dados cadastrados.
+document.getElementById('btn-reset-epi-form').addEventListener('click', () => {
+  newEpiInput.value = '';
+  clearFieldErrors([newEpiInput]);
+  showToast('Campos da Ficha de EPI limpos.', 'success');
 });
 
 function toggleDocCheck(el) {
@@ -1288,15 +1325,30 @@ function renderEstoque() {
         <span class="file-size">Total: ${item.total} • Em uso: ${item.emUso} • Disponível: ${item.total - item.emUso}</span>
       </div>
       <div class="estoque-controls">
+        <div class="estoque-control-group">
+          <span class="estoque-control-label">Total</span>
+          <button class="estoque-step-btn" data-action="decrease" data-name="${item.nome}" aria-label="Reduzir quantidade total">-</button>
+          <input class="estoque-input" type="number" min="${item.emUso}" value="${item.total}" data-action="set" data-name="${item.nome}" aria-label="Quantidade total em estoque de ${item.nome}">
+          <button class="estoque-step-btn" data-action="increase" data-name="${item.nome}" aria-label="Aumentar quantidade total">+</button>
+        </div>
+        <div class="estoque-control-group">
+          <span class="estoque-control-label">Em uso</span>
+          <button class="estoque-step-btn" data-action="decrease-use" data-name="${item.nome}" aria-label="Reduzir EPIs em uso">-</button>
+          <input class="estoque-input estoque-input-readonly" type="number" value="${item.emUso}" readonly aria-label="Quantidade de EPIs em uso de ${item.nome}">
+          <button class="estoque-step-btn" data-action="increase-use" data-name="${item.nome}" aria-label="Aumentar EPIs em uso">+</button>
+        </div>
         <button class="estoque-remove-btn" data-action="remove" data-name="${item.nome}" aria-label="Excluir ${item.nome}">
           ${getTrashIconMarkup()}
         </button>
-        <button class="estoque-step-btn" data-action="decrease" data-name="${item.nome}" aria-label="Reduzir quantidade">-</button>
-        <input class="estoque-input" type="number" min="${item.emUso}" value="${item.total}" data-action="set" data-name="${item.nome}" aria-label="Quantidade total em estoque de ${item.nome}">
-        <button class="estoque-step-btn" data-action="increase" data-name="${item.nome}" aria-label="Aumentar quantidade">+</button>
       </div>
     </div>
   `).join('');
+}
+
+function clampEstoqueItem(item) {
+  item.total = Math.max(0, Number(item.total) || 0);
+  item.emUso = Math.max(0, Number(item.emUso) || 0);
+  item.emUso = Math.min(item.emUso, item.total);
 }
 
 document.getElementById('estoque-lista').addEventListener('click', event => {
@@ -1314,8 +1366,21 @@ document.getElementById('estoque-lista').addEventListener('click', event => {
   const item = state.estoqueEpis.find(epi => epi.nome === nome);
   if (!item) return;
 
-  const step = button.dataset.action === 'increase' ? 1 : -1;
-  item.total = Math.max(item.emUso, item.total + step);
+  const action = button.dataset.action;
+  if (action === 'increase' || action === 'decrease') {
+    const step = action === 'increase' ? 1 : -1;
+    item.total = item.total + step;
+  }
+
+  // Controlador dedicado para EPIs em uso (+ / -), sem permitir valor negativo.
+  if (action === 'increase-use') {
+    item.emUso = item.emUso + 1;
+  }
+  if (action === 'decrease-use') {
+    item.emUso = item.emUso - 1;
+  }
+
+  clampEstoqueItem(item);
   renderEstoque();
 });
 
@@ -1328,7 +1393,10 @@ document.getElementById('estoque-lista').addEventListener('change', event => {
   if (!item) return;
 
   const requested = Number(input.value);
-  item.total = Number.isFinite(requested) ? Math.max(item.emUso, requested) : item.total;
+  if (Number.isFinite(requested)) {
+    item.total = requested;
+  }
+  clampEstoqueItem(item);
   renderEstoque();
 });
 
