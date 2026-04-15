@@ -1669,7 +1669,10 @@ body.light-theme * {
   background: var(--g700);
   color: var(--txt-main);
   border-color: var(--border-hover);
+  transform: translateY(-2px);
 }
+
+.btn-ghost:active { transform: translateY(0); }
 
 .btn-ghost svg { width: 15px; height: 15px; }
 
