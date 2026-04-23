@@ -444,6 +444,7 @@ body.light-theme * {
   background: var(--g750);
   color: var(--txt-main);
   border-color: var(--border-hover);
+  box-shadow: 0 0 12px rgba(83,167,162,0.35), 0 0 24px rgba(83,167,162,0.15);
 }
 
 .tb-icon-btn svg { width: 17px; height: 17px; }
@@ -807,12 +808,13 @@ body.light-theme * {
 .field-input:hover:not(:focus) {
   border-color: var(--border-hover);
   background: var(--g700);
+  box-shadow: 0 0 12px rgba(83,167,162,0.3), 0 0 24px rgba(83,167,162,0.15);
 }
 
 .field-input:focus {
   border-color: var(--o400);
   background: var(--g700);
-  box-shadow: 0 0 0 3px rgba(240,120,40,0.12);
+  box-shadow: 0 0 0 3px rgba(240,120,40,0.12), 0 0 20px rgba(240,120,40,0.4), 0 0 40px rgba(240,120,40,0.2);
 }
 
 .field-select {
@@ -1293,7 +1295,7 @@ body.light-theme * {
 
 .dz-btn:hover {
   background: var(--o300);
-  box-shadow: 0 6px 20px rgba(240,120,40,0.5);
+  box-shadow: 0 6px 20px rgba(240,120,40,0.5), 0 0 25px rgba(240,120,40,0.5), 0 0 45px rgba(240,120,40,0.25);
 }
 
 .files-list {
@@ -1640,7 +1642,7 @@ body.light-theme * {
 
 .btn-primary:hover {
   background: var(--o300);
-  box-shadow: 0 6px 28px rgba(240,120,40,0.55);
+  box-shadow: 0 6px 28px rgba(240,120,40,0.55), 0 0 30px rgba(240,120,40,0.6), 0 0 50px rgba(240,120,40,0.3);
   transform: translateY(-2px);
 }
 
@@ -1670,6 +1672,7 @@ body.light-theme * {
   color: var(--txt-main);
   border-color: var(--border-hover);
   transform: translateY(-2px);
+  box-shadow: 0 0 15px rgba(83,167,162,0.4), 0 0 30px rgba(83,167,162,0.2);
 }
 
 .btn-ghost:active { transform: translateY(0); }
