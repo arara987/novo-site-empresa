@@ -1,20 +1,18 @@
-import { Equipment, EquipmentHistory, TrainingRecord } from '../models/index.js';
+import { createEquipment, updateEquipment } from '../services/equipmentService.js';
+import { recordTraining } from '../services/trainingService.js';
 
-export async function createEquipment(req, res) {
-  const equipment = await Equipment.create(req.body);
-  await EquipmentHistory.create({ equipment_id: equipment.id, action: 'created', date: new Date(), responsible_id: equipment.responsible_id });
+export async function createEquipmentHandler(req, res) {
+  const equipment = createEquipment(req.body);
   res.status(201).json(equipment);
 }
 
-export async function updateEquipment(req, res) {
-  const equipment = await Equipment.findByPk(req.params.id);
+export async function updateEquipmentHandler(req, res) {
+  const equipment = updateEquipment(req.params.id, req.body);
   if (!equipment) return res.status(404).json({ message: 'Equipamento não encontrado' });
-  await equipment.update(req.body);
-  await EquipmentHistory.create({ equipment_id: equipment.id, action: 'updated', date: new Date(), responsible_id: equipment.responsible_id });
-  res.json(equipment);
+  return res.json(equipment);
 }
 
-export async function recordTraining(req, res) {
-  const record = await TrainingRecord.create(req.body);
+export async function recordTrainingHandler(req, res) {
+  const record = recordTraining(req.body);
   res.status(201).json(record);
 }

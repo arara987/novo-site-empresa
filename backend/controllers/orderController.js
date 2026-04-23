@@ -1,15 +1,11 @@
-import { Order, OrderItem, Product } from '../models/index.js';
+import { createOrder } from '../services/orderService.js';
 
-export async function createOrder(req, res) {
-  const { client_id, architect_id, status = 'pending', items = [] } = req.body;
-  const order = await Order.create({ client_id, architect_id, status });
-  for (const item of items) {
-    const product = await Product.findByPk(item.product_id);
-    if (!product || product.stock_quantity < item.quantity) return res.status(400).json({ message: `Estoque insuficiente: ${item.product_id}` });
-    await OrderItem.create({ order_id: order.id, product_id: item.product_id, quantity: item.quantity });
-    product.stock_quantity -= item.quantity;
-    await product.save();
+export async function createOrderHandler(req, res) {
+  try {
+    const order = createOrder(req.body);
+    if (req.logActivity) await req.logActivity({ orderId: order.id });
+    res.status(201).json(order);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
   }
-  if (req.logActivity) await req.logActivity({ orderId: order.id });
-  res.status(201).json(order);
 }

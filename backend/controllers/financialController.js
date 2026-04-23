@@ -1,33 +1,13 @@
-import { FinancialRecord, OrderItem, Order, Product, Client, Architect, User } from '../models/index.js';
 import ExcelJS from 'exceljs';
+import { createFinancialRecord, getFinancialRowsForExport } from '../services/financialService.js';
 
-export async function createFinancialRecord(req, res) {
-  const record = await FinancialRecord.create(req.body);
+export async function createFinancialRecordHandler(req, res) {
+  const record = createFinancialRecord(req.body);
   res.status(201).json(record);
 }
 
 export async function exportReport(req, res) {
-  const rows = await OrderItem.findAll({
-    include: [
-      { model: Product, attributes: ['name'] },
-      {
-        model: Order,
-        include: [
-          { model: Client, include: [{ model: User, attributes: ['name'] }] },
-          { model: Architect, include: [{ model: User, attributes: ['name'] }] }
-        ]
-      }
-    ]
-  });
-  const data = rows.map((r) => ({
-    client: r.order?.client?.user?.name || '',
-    architect: r.order?.architect?.user?.name || '',
-    product: r.product?.name || '',
-    value: Number(r.quantity) * Number(r.product?.price || 0),
-    date: r.order?.created_at,
-    origin: 'Site',
-    status: r.order?.status || ''
-  }));
+  const data = getFinancialRowsForExport();
 
   if (req.query.format === 'csv') {
     const csv = ['client,architect,product,value,date,origin,status', ...data.map((d) => `${d.client},${d.architect},${d.product},${d.value},${d.date},${d.origin},${d.status}`)].join('\n');

@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Link, Route, Routes } from 'react-router-dom';
-import api from '../services/api';
 import Catalog from '../components/Catalog';
 import WhatsAppCheckout from '../components/WhatsAppCheckout';
 import LoginPage from './LoginPage';
 import ProtectedRoute from '../components/ProtectedRoute';
+import { getProducts } from '../services/productService';
+import api from '../services/api';
 
 function Home() {
   const [products, setProducts] = useState([]);
-  useEffect(() => { api.get('/products').then((r) => setProducts(r.data)); }, []);
+  useEffect(() => {
+    getProducts().then(setProducts);
+  }, []);
 
   return (
     <main className="shell">
