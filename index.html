@@ -193,7 +193,7 @@
                 d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z" />
             </svg>
           </span>
-          <span class="sb-item-label">Ferramentas</span>
+          <span class="sb-item-label">Equipamentos</span>
           <span class="sb-item-arrow">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="9 18 15 12 9 6" />
@@ -546,6 +546,19 @@
               </svg>
               Cadastrar Cliente
             </button>
+            <button class="btn-ghost" id="btn-view-clientes">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              Ver Clientes Cadastrados
+            </button>
+          </div>
+          <div class="card" id="clientes-list-card" style="display:none">
+            <div class="card-header">
+              <h2 class="card-title">Clientes Cadastrados</h2>
+            </div>
+            <div id="clientes-list"></div>
           </div>
           <div class="card" id="obra-cadastro-card">
             <div class="card-header">
@@ -622,6 +635,14 @@
                 </svg>
                 Cadastrar Obra
               </button>
+            </div>
+          </div>
+          <div class="card" id="obras-list-card">
+            <div class="card-header">
+              <h2 class="card-title">Obras Cadastradas</h2>
+            </div>
+            <div id="obras-list">
+              <p class="stat-sub">Nenhuma obra cadastrada.</p>
             </div>
           </div>
         </section>
@@ -978,7 +999,7 @@
           </div>
         </section>
 
-        <!-- NOVA ABA: Documentos Gerais (CCD) -->
+        <!-- NOVA ABA: Documentos Gerais (CND) -->
         <section class="page" id="page-documentos-gerais">
           <div class="page-hero">
             <div class="page-hero-icon">
@@ -989,13 +1010,13 @@
             </div>
             <div class="page-hero-text">
               <h1>Documentos Gerais</h1>
-              <p>Gestão do Circuito Casa Decor e documentação geral</p>
+              <p>Gestão de CND e documentação geral</p>
             </div>
             <div class="page-hero-badge">Fiscal</div>
           </div>
           <div class="card">
             <div class="card-header">
-              <h2 class="card-title">Circuito Casa Decor (CCD)</h2>
+              <h2 class="card-title">Certidão Negativa de Débitos (CND)</h2>
             </div>
             <div class="card-content">
               <p style="margin-bottom:16px;color:var(--txt-sub)">Informe os valores pagos mensalmente</p>
@@ -1010,34 +1031,34 @@
         <!-- NOVA ABA: Equipamentos -->
         <section class="page" id="page-equipamentos">
           <div class="page-header-inline">
-            <h2>Ferramentas</h2>
+            <h2>Equipamentos</h2>
             <div class="page-hero-badge">Ferramentas</div>
           </div>
           <div class="stats-row" style="margin-bottom:24px">
             <div class="stat-card">
-              <div class="stat-top"><span class="stat-label">Total de Ferramentas</span></div>
+              <div class="stat-top"><span class="stat-label">Estoque Geral</span></div>
               <div class="stat-value" id="equip-total">0</div>
               <div class="stat-sub">somatório total</div>
             </div>
             <div class="stat-card">
               <div class="stat-top"><span class="stat-label">Em Uso</span></div>
               <div class="stat-value" id="equip-em-uso">0</div>
-              <div class="stat-sub">ferramentas em uso</div>
+              <div class="stat-sub">equipamentos em uso</div>
             </div>
             <div class="stat-card">
               <div class="stat-top"><span class="stat-label">Disponível</span></div>
               <div class="stat-value" id="equip-disponivel">0</div>
-              <div class="stat-sub">ferramentas disponíveis para uso</div>
+              <div class="stat-sub">disponível para uso</div>
             </div>
           </div>
           <div class="card">
             <div class="card-header">
-              <h2 class="card-title">Ferramentas Cadastradas</h2>
-              <button class="btn-primary" onclick="openEquipModal()" style="margin-left:auto">+ Nova
-                Ferramenta</button>
+              <h2 class="card-title">Equipamentos Cadastrados</h2>
+              <button class="btn-primary" onclick="openEquipModal()" style="margin-left:auto">+ Novo
+                Equipamento</button>
             </div>
             <div id="equipamentos-lista">
-              <p class="stat-sub">Nenhuma ferramenta cadastrada.</p>
+              <p class="stat-sub">Nenhum equipamento cadastrado.</p>
             </div>
           </div>
         </section>
@@ -1109,7 +1130,7 @@
         </button>
       </div>
       <div class="field">
-        <label class="field-label">Nome da Ferramenta</label>
+        <label class="field-label">Nome do Equipamento</label>
         <input type="text" class="field-input" id="new-epi-input" placeholder="Ex: Respirador semifacial">
       </div>
       <div class="modal-footer">
@@ -1128,7 +1149,7 @@
   <div class="modal-overlay" id="equip-modal">
     <div class="modal">
       <div class="modal-header">
-        <h3 class="modal-title">Adicionar Nova Ferramenta</h3>
+        <h3 class="modal-title">Adicionar Novo Equipamento</h3>
         <button class="modal-close" onclick="closeEquipModal()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="18" y1="6" x2="6" y2="18" />
@@ -1137,7 +1158,7 @@
         </button>
       </div>
       <div class="field">
-        <label class="field-label">Nome da Ferramenta</label>
+        <label class="field-label">Nome do Equipamento</label>
         <input type="text" class="field-input" id="new-equip-input" placeholder="Ex: Furadeira de impacto">
       </div>
       <div class="form-row">
@@ -1163,281 +1184,19 @@
     </div>
   </div>
 
+  <!-- Supabase client: necessário para persistir dados no banco -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script>
-    // ========== CONFIGURAÇÕES INICIAIS ==========
-    const pages = {
-      'epi': 'Ficha de EPI',
-      'clientes': 'Clientes e Obras',
-      'pagamento-obras': 'Pagamento de Obras',
-      'clientes-lista': 'Clientes',
-      'cadastro-profissionais': 'Cadastro de Profissionais',
-      'profissionais-lista': 'Profissionais',
-      'documentos': 'Documentos da Obra',
-      'documentos-gerais': 'Documentos Gerais',
-      'estoque': 'Estoque EPI',
-      'equipamentos': 'Ferramentas',
-      'notificacoes': 'Notificações'
-    };
-
-    const mockParcelasObra = [
-      { data: '2026-02-10', valor: 'R$ 155.000,00', percentual: '8,38%' },
-      { data: '2026-03-10', valor: 'R$ 155.000,00', percentual: '8,38%' },
-      { data: '2026-04-10', valor: 'R$ 155.000,00', percentual: '8,38%' },
-      { data: '2026-05-10', valor: 'R$ 155.000,00', percentual: '8,38%' }
-    ];
-
-    const mockParcelasArt = [
-      { data: '2026-05-20', valor: 'R$ 1.250,00', percentual: '25,00%' },
-      { data: '2026-06-20', valor: 'R$ 1.250,00', percentual: '25,00%' },
-      { data: '2026-07-20', valor: 'R$ 1.250,00', percentual: '25,00%' },
-      { data: '2026-08-20', valor: 'R$ 1.250,00', percentual: '25,00%' }
-    ];
-
-    // ========== ESTADO DA APLICAÇÃO ==========
-    // Os dados abaixo são mockups para visualização. Ao integrar com banco de dados/API, substitua este objeto pelo retorno real.
-    const state = {
-      clientes: [
-        {
-          nome: 'Construtora Horizonte Ltda',
-          documento: 'CNPJ: 12.345.678/0001-90',
-          telefone: '(71) 98888-1200',
-          email: 'obras@horizonte.com.br',
-          endereco: {
-            cep: '41820-020',
-            logradouro: 'Av. Tancredo Neves',
-            numero: '1485',
-            complemento: 'Sala 1204',
-            bairro: 'Caminho das Árvores',
-            cidade: 'Salvador',
-            uf: 'BA'
-          },
-          art: {
-            valorAcordado: 'R$ 5.000,00',
-            pagamento: {
-              tipo: 'parcelado',
-              entrada: 'R$ 0,00',
-              valorParcela: 'R$ 1.250,00',
-              quantidadeParcelas: 4,
-              parcelas: mockParcelasArt
-            }
-          }
-        },
-        {
-          nome: 'Mariana Ferreira',
-          documento: 'CPF: 123.456.789-10',
-          telefone: '(71) 97777-4500',
-          email: 'mariana.ferreira@email.com',
-          endereco: {
-            cep: '40140-110',
-            logradouro: 'Rua da Graça',
-            numero: '220',
-            complemento: 'Apto 804',
-            bairro: 'Graça',
-            cidade: 'Salvador',
-            uf: 'BA'
-          }
-        },
-        {
-          nome: 'Grupo Atlântico Engenharia',
-          documento: 'CNPJ: 45.987.654/0001-32',
-          telefone: '(71) 3333-8899',
-          email: 'contratos@atlanticoeng.com.br',
-          endereco: {
-            cep: '41745-715',
-            logradouro: 'Av. Luís Viana Filho',
-            numero: '6462',
-            complemento: 'Ed. Wall Street, sala 308',
-            bairro: 'Patamares',
-            cidade: 'Salvador',
-            uf: 'BA'
-          }
-        }
-      ],
-      obras: [
-        {
-          descricao: 'Residencial Bela Vista — Torre A',
-          dataInicio: '2026-01-06',
-          dataTermino: '2026-10-30',
-          valor: 'R$ 1.850.000,00',
-          endereco: {
-            cep: '41720-200',
-            logradouro: 'Rua do Bosque',
-            numero: '100',
-            complemento: 'Canteiro 02',
-            bairro: 'Paralela',
-            cidade: 'Salvador',
-            uf: 'BA'
-          },
-          clienteIndex: 0,
-          clienteNome: 'Construtora Horizonte Ltda',
-          pagamento: {
-            tipo: 'parcelado',
-            entrada: 'R$ 300.000,00',
-            valorParcela: 'R$ 155.000,00',
-            quantidadeParcelas: 10,
-            parcelas: mockParcelasObra
-          }
-        },
-        {
-          descricao: 'Reforma Residencial Graça',
-          dataInicio: '2026-03-02',
-          dataTermino: '2026-07-15',
-          valor: 'R$ 280.000,00',
-          endereco: {
-            cep: '40140-110',
-            logradouro: 'Rua da Graça',
-            numero: '220',
-            complemento: 'Apto 804',
-            bairro: 'Graça',
-            cidade: 'Salvador',
-            uf: 'BA'
-          },
-          clienteIndex: 1,
-          clienteNome: 'Mariana Ferreira',
-          pagamento: {
-            tipo: 'vista',
-            valorPago: 'R$ 280.000,00',
-            dataPagamento: '2026-03-05'
-          }
-        },
-        {
-          descricao: 'Galpão Logístico Lauro de Freitas',
-          dataInicio: '2026-04-07',
-          dataTermino: '2026-12-18',
-          valor: 'R$ 950.000,00',
-          endereco: {
-            cep: '42700-000',
-            logradouro: 'Estrada do Coco',
-            numero: '5100',
-            complemento: 'Lote 12',
-            bairro: 'Centro',
-            cidade: 'Lauro de Freitas',
-            uf: 'BA'
-          },
-          clienteIndex: 2,
-          clienteNome: 'Grupo Atlântico Engenharia'
-        }
-      ],
-      notifications: [
-        {
-          tag: 'Mockup',
-          description: 'Dados de exemplo carregados para visualizar clientes, obras, pagamentos e treinamentos.',
-          time: '09:00',
-          unread: true,
-          targetPage: 'clientes-lista',
-          targetSelector: '#clientes-lista-pagamento'
-        },
-        {
-          tag: 'Documentos',
-          description: 'ART / RRT pendente para Galpão Logístico Lauro de Freitas.',
-          time: '09:15',
-          unread: true,
-          targetPage: 'documentos',
-          targetSelector: '#documento-obra'
-        },
-        {
-          tag: 'Estoque',
-          description: 'Máscara PFF2 com alto volume em uso. Verifique o estoque disponível.',
-          time: '09:30',
-          unread: false,
-          targetPage: 'estoque',
-          targetSelector: '#estoque-lista'
-        }
-      ],
-      selectedClienteIndex: 0,
-      expandedClienteIndex: null,
-      expandedObraIndex: null,
-      sidebarCollapsed: false,
-      estoqueEpis: [
-        { nome: 'Capacete de segurança', total: 32, emUso: 20 },
-        { nome: 'Óculos de segurança', total: 50, emUso: 35 },
-        { nome: 'Protetor facial', total: 35, emUso: 22 },
-        { nome: 'Protetor auricular', total: 100, emUso: 70 },
-        { nome: 'Máscara PFF2', total: 200, emUso: 150 },
-        { nome: 'Luvas de vaqueta', total: 85, emUso: 60 },
-        { nome: 'Luvas de borracha', total: 40, emUso: 18 },
-        { nome: 'Botas de segurança', total: 60, emUso: 45 },
-        { nome: 'Perneiras', total: 18, emUso: 12 },
-        { nome: 'Uniforme de trabalho', total: 80, emUso: 55 },
-        { nome: 'Cinto paraquedista', total: 25, emUso: 18 },
-        { nome: 'Trava-quedas retrátil', total: 14, emUso: 9 }
-      ],
-      profissionais: [
-        {
-          nome: 'Carlos Andrade',
-          profissao: 'Engenheiro Civil',
-          telefone: '(71) 98800-1122',
-          email: 'carlos.andrade@belfort.com',
-          documento: '98765432100',
-          endereco: {
-            cep: '40301-110',
-            logradouro: 'Rua Chile',
-            numero: '12',
-            complemento: 'Sala 701',
-            bairro: 'Centro',
-            cidade: 'Salvador',
-            uf: 'BA'
-          },
-          observacoes: 'Responsável por medições e cronograma físico-financeiro.',
-          treinamentos: [
-            { nome: 'NR-35 Trabalho em Altura', tipo: 'seguranca', data: '2026-02-12', observacoes: 'Reciclagem anual concluída' }
-          ]
-        },
-        {
-          nome: 'Juliana Santos',
-          profissao: 'Técnica de Segurança do Trabalho',
-          telefone: '(71) 99911-3344',
-          email: 'juliana.santos@belfort.com',
-          documento: '12312312300',
-          endereco: {
-            cep: '41200-020',
-            logradouro: 'Av. São Rafael',
-            numero: '900',
-            complemento: '',
-            bairro: 'São Rafael',
-            cidade: 'Salvador',
-            uf: 'BA'
-          },
-          observacoes: 'Acompanha DDS e checklist de EPIs.',
-          treinamentos: [
-            { nome: 'NR-18 Condições de Trabalho na Construção', tipo: 'seguranca', data: '2026-03-22', observacoes: 'Treinamento obrigatório' },
-            { nome: 'Primeiros Socorros', tipo: 'tecnico', data: '2026-04-05', observacoes: 'Turma interna' }
-          ]
-        }
-      ],
-      equipamentos: [
-        { nome: 'Furadeira de impacto', total: 10, emUso: 6 },
-        { nome: 'Betoneira 400L', total: 5, emUso: 3 },
-        { nome: 'Andaime fachadeiro', total: 20, emUso: 15 },
-        { nome: 'Marreta 5kg', total: 15, emUso: 10 },
-        { nome: 'Serra circular', total: 8, emUso: 5 },
-        { nome: 'Compactador de solo', total: 4, emUso: 2 }
-      ],
-      cnd: {
-        ano: new Date().getFullYear(),
-        meses: { 1: 1200, 2: 1350, 3: 0, 4: 980, 5: 1500, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0 },
-        anexos: { 1: 'comprovante-cdd-janeiro.pdf', 2: 'boleto-cdd-fevereiro.pdf' }
-      }
-    };
-
-    // Carregar CCD do localStorage quando existir, sem quebrar o site se o navegador bloquear armazenamento local.
-    try {
-      const cndSalvo = localStorage.getItem('cnd');
-      if (cndSalvo) state.cnd = JSON.parse(cndSalvo);
-    } catch (e) { }
-
     function showPage(id) {
-      const page = document.getElementById('page-' + id);
-      if (!page) return;
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
-      page.classList.add('active');
-      const navItem = document.querySelector('[data-page="' + id + '"]');
-      if (navItem) navItem.classList.add('active');
-      document.getElementById('tb-current').textContent = pages[id] || id;
+      document.getElementById('page-' + id).classList.add('active');
+      document.querySelector('[data-page="' + id + '"]').classList.add('active');
+      document.getElementById('tb-current').textContent = pages[id];
       if (id === 'pagamento-obras') { renderPagamentoObrasList(); updatePagamentoObrasStats(); }
       if (id === 'clientes-lista') { renderClientesLista(); updateClientesListaStats(); }
-      if (id === 'cadastro-profissionais') { updateProfCount(); }
+      if (id === 'cadastro-profissionais') { resetProfissionalForm(); }
       if (id === 'profissionais-lista') { renderProfissionaisList(); updateProfListaStats(); }
       if (id === 'documentos-gerais') { renderCndTable(); }
       if (id === 'equipamentos') { renderEquipamentos(); updateEquipStats(); }
@@ -1445,7 +1204,7 @@
 
     function toggleTheme() {
       const isLight = document.body.classList.toggle('light-theme');
-      try { localStorage.setItem('theme', isLight ? 'light' : 'dark'); } catch (e) { }
+      localStorage.setItem('theme', isLight ? 'light' : 'dark');
     }
 
     function toggleSidebar() {
@@ -1453,11 +1212,9 @@
       document.querySelector('.app').classList.toggle('sidebar-collapsed', state.sidebarCollapsed);
     }
 
-    try {
-      if (localStorage.getItem('theme') === 'light') {
-        document.body.classList.add('light-theme');
-      }
-    } catch (e) { }
+    if (localStorage.getItem('theme') === 'light') {
+      document.body.classList.add('light-theme');
+    }
 
     document.getElementById('theme-toggle-btn').addEventListener('click', toggleTheme);
     document.getElementById('tb-collapse-btn').addEventListener('click', toggleSidebar);
@@ -1534,12 +1291,6 @@
     }
 
     document.querySelectorAll('.epi-item').forEach(decorateEpiItem);
-    document.getElementById('epi-grid').addEventListener('click', event => {
-      const removeButton = event.target.closest('.epi-remove-btn');
-      const item = event.target.closest('.epi-item');
-      if (!item || removeButton) return;
-      item.classList.toggle('checked');
-    });
     const baseEpiList = Array.from(document.querySelectorAll('.epi-item'))
       .map(item => (item.dataset.name || '').trim())
       .filter(Boolean);
@@ -1695,7 +1446,6 @@
 
     function renderClientesList() {
       const list = document.getElementById('clientes-list');
-      if (!list) return;
       if (!state.clientes.length) {
         list.innerHTML = '<p class="stat-sub">Nenhum cliente cadastrado.</p>';
         return;
@@ -1728,7 +1478,6 @@
 
     function renderObrasDoCliente() {
       const list = document.getElementById('obras-list');
-      if (!list) return;
       if (!state.obras.length) {
         list.innerHTML = '<p class="stat-sub">Nenhuma obra cadastrada.</p>';
         return;
@@ -2090,15 +1839,14 @@
         documento: `${docType}: ${docDigits}`,
         telefone: document.getElementById('cliente-telefone').value.trim(),
         email: document.getElementById('cliente-email').value.trim(),
-        endereco,
-        enderecoTexto: enderecoCompleto
+        endereco: enderecoCompleto
       };
 
       state.clientes.push(cliente);
       document.getElementById('clientes-count').textContent = state.clientes.length;
       renderClientesList();
       updateObraOptions();
-      addNotification('Clientes', `Novo cliente cadastrado: ${nome}.`, 'clientes-lista', '#clientes-lista-pagamento');
+      addNotification('Clientes', `Novo cliente cadastrado: ${nome}.`, 'clientes', '#clientes-list-card');
       showToast('Cadastro de cliente realizado com sucesso!', 'success');
 
       if (state.selectedClienteIndex === null) {
@@ -2161,7 +1909,7 @@
       renderClientesList();
       updateObraOptions();
       updateClienteCards();
-      addNotification('Obras', `Obra cadastrada para ${obra.clienteNome}: ${obra.descricao}.`, 'pagamento-obras', '#pagamento-obras-list');
+      addNotification('Obras', `Obra cadastrada para ${obra.clienteNome}: ${obra.descricao}.`, 'clientes', '#obras-list-card');
       showToast('Cadastro de obra realizado com sucesso!', 'success');
     });
 
@@ -2177,6 +1925,7 @@
       card.style.display = card.style.display === 'none' ? 'block' : 'none';
     }
 
+    document.getElementById('btn-view-clientes').addEventListener('click', () => toggleCard('clientes-list-card'));
 
     function addNotification(tag, description, targetPage = 'notificacoes', targetSelector = '') {
       state.notifications.unshift({
@@ -2327,26 +2076,15 @@
       renderEstoque();
     });
 
-    function initializeApp() {
-      renderNotifications();
-      renderEstoque();
-      updateEpiRegistradosCount();
-      setupCustomDocumentSelect();
-      applyDocType('CPF');
-      updateClienteCards();
-      renderClientesList();
-      renderObrasDoCliente();
-      updateObraOptions();
-      document.getElementById('clientes-count').textContent = state.clientes.length;
-      document.getElementById('obras-count').textContent = state.obras.length;
-      updatePagamentoObrasStats();
-      updateClientesListaStats();
-      updateProfCount();
-      updateProfListaStats();
-      updateEquipStats();
-    }
-
-    initializeApp();
+    renderNotifications();
+    renderEstoque();
+    updateEpiRegistradosCount();
+    setupCustomDocumentSelect();
+    applyDocType('CPF');
+    updateClienteCards();
+    renderClientesList();
+    renderObrasDoCliente();
+    updateObraOptions();
 
     let toastTimer;
     function showToast(msg, type = 'success') {
@@ -2371,18 +2109,68 @@
       toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
     }
 
-    function formatEndereco(endereco) {
-      if (!endereco) return 'Não informado';
-      if (typeof endereco === 'string') return endereco;
-      const complemento = endereco.complemento ? ', ' + endereco.complemento : '';
-      const cep = endereco.cep ? ' (' + endereco.cep + ')' : '';
-      return `${endereco.logradouro || ''}, ${endereco.numero || 's/n'}${complemento} — ${endereco.bairro || ''}, ${endereco.cidade || ''} - ${endereco.uf || ''}${cep}`.replace(/\s+/g, ' ').trim();
+    // ========== CONFIGURAÇÕES INICIAIS ==========
+    const pages = {
+      'epi': 'Ficha de EPI',
+      'clientes': 'Clientes e Obras',
+      'pagamento-obras': 'Pagamento de Obras',
+      'clientes-lista': 'Clientes',
+      'cadastro-profissionais': 'Cadastro de Profissionais',
+      'profissionais-lista': 'Profissionais',
+      'documentos': 'Documentos da Obra',
+      'documentos-gerais': 'Documentos Gerais',
+      'estoque': 'Estoque EPI',
+      'equipamentos': 'Equipamentos',
+      'notificacoes': 'Notificações'
+    };
+
+    // ========== ESTADO DA APLICAÇÃO ==========
+    const state = {
+      clientes: [],
+      obras: [],
+      notifications: [],
+      selectedClienteIndex: null,
+      expandedClienteIndex: null,
+      expandedObraIndex: null,
+      sidebarCollapsed: false,
+      estoqueEpis: [
+        { nome: 'Capacete de segurança', total: 32, emUso: 20 },
+        { nome: 'Luva de segurança', total: 85, emUso: 60 },
+        { nome: 'Óculos de proteção', total: 50, emUso: 35 },
+        { nome: 'Protetor auricular', total: 100, emUso: 70 },
+        { nome: 'Máscara PFF2', total: 200, emUso: 150 },
+        { nome: 'Cinto de segurança', total: 25, emUso: 18 },
+        { nome: 'Bota de segurança', total: 60, emUso: 45 },
+        { nome: 'Uniforme de brim', total: 80, emUso: 55 },
+        { nome: 'Capa de chuva', total: 30, emUso: 20 },
+        { nome: 'Máscara respiratória', total: 40, emUso: 25 },
+        { nome: 'Protetor facial', total: 35, emUso: 22 },
+        { nome: 'Calçado de segurança', total: 45, emUso: 30 }
+      ],
+      profissionais: [],
+      equipamentos: [
+        { nome: 'Furadeira', total: 10, emUso: 6 },
+        { nome: 'Betoneira', total: 5, emUso: 3 },
+        { nome: 'Andaime', total: 20, emUso: 15 },
+        { nome: 'Marreta', total: 15, emUso: 10 },
+        { nome: 'Cimento', total: 100, emUso: 0 },
+        { nome: 'Serra Circular', total: 8, emUso: 5 }
+      ],
+      cnd: {
+        ano: new Date().getFullYear(),
+        meses: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0 }
+      }
+    };
+
+    // Carregar CND do localStorage
+    const cndSalvo = localStorage.getItem('cnd');
+    if (cndSalvo) {
+      try { state.cnd = JSON.parse(cndSalvo); } catch (e) { }
     }
 
     // ========== FUNÇÕES DE RENDERIZAÇÃO EXISTENTES (mantidas) ==========
     function renderClientesList() {
       const c = document.getElementById('clientes-list');
-      if (!c) return;
       if (!state.clientes.length) { c.innerHTML = '<p class="stat-sub">Nenhum cliente cadastrado.</p>'; return; }
       c.innerHTML = state.clientes.map((cl, idx) => `
     <div class="accordion-item">
@@ -2394,67 +2182,12 @@
         <div class="accordion-content-inner">
           <p><strong>Telefone:</strong> ${cl.telefone || 'Não informado'}</p>
           <p><strong>E-mail:</strong> ${cl.email || 'Não informado'}</p>
-          <p><strong>Endereço:</strong> ${formatEndereco(cl.endereco)}</p>
+          <p><strong>Endereço:</strong> ${cl.endereco ? cl.endereco.logradouro + ', ' + cl.endereco.numero + (cl.endereco.complemento ? ', ' + cl.endereco.complemento : '') + ' — ' + cl.endereco.bairro + ', ' + cl.endereco.cidade + ' - ' + cl.endereco.uf + ' (' + cl.endereco.cep + ')' : 'Não informado'}</p>
         </div>
       </div>
     </div>
   `).join('');
     }
-
-
-    // ========== ANEXOS DE COMPROVANTES / BOLETOS ==========
-    function renderAttachmentControl(context, ownerIdx, itemIdx, label) {
-      const safeLabel = label || 'Anexar comprovante ou boleto';
-      const inputId = `attach-${context}-${ownerIdx}-${itemIdx}`;
-      const displayId = `attach-name-${context}-${ownerIdx}-${itemIdx}`;
-      return `
-        <div class="attachment-control">
-          <label class="attachment-btn" for="${inputId}">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
-            </svg>
-            ${safeLabel}
-          </label>
-          <input class="attachment-input" id="${inputId}" type="file" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" onchange="handlePaymentAttachment('${context}', ${ownerIdx}, '${itemIdx}', this)">
-          <span class="attachment-name" id="${displayId}">${getAttachmentName(context, ownerIdx, itemIdx)}</span>
-        </div>`;
-    }
-
-    function getAttachmentBucket(context, ownerIdx) {
-      if (context === 'obra') {
-        state.obras[ownerIdx].pagamento = state.obras[ownerIdx].pagamento || {};
-        state.obras[ownerIdx].pagamento.anexos = state.obras[ownerIdx].pagamento.anexos || {};
-        return state.obras[ownerIdx].pagamento.anexos;
-      }
-      if (context === 'art') {
-        state.clientes[ownerIdx].art = state.clientes[ownerIdx].art || { pagamento: {} };
-        state.clientes[ownerIdx].art.pagamento = state.clientes[ownerIdx].art.pagamento || {};
-        state.clientes[ownerIdx].art.pagamento.anexos = state.clientes[ownerIdx].art.pagamento.anexos || {};
-        return state.clientes[ownerIdx].art.pagamento.anexos;
-      }
-      if (context === 'cdd') {
-        state.cnd.anexos = state.cnd.anexos || {};
-        return state.cnd.anexos;
-      }
-      return {};
-    }
-
-    function getAttachmentName(context, ownerIdx, itemIdx) {
-      const bucket = getAttachmentBucket(context, ownerIdx);
-      return bucket[itemIdx] ? bucket[itemIdx] : 'Nenhum arquivo anexado';
-    }
-
-    function handlePaymentAttachment(context, ownerIdx, itemIdx, input) {
-      const file = input.files && input.files[0];
-      if (!file) return;
-      const bucket = getAttachmentBucket(context, ownerIdx);
-      bucket[itemIdx] = file.name;
-      const display = document.getElementById(`attach-name-${context}-${ownerIdx}-${itemIdx}`);
-      if (display) display.textContent = file.name;
-      if (context === 'cdd') saveCndToLocalStorage();
-      showToast('Arquivo anexado: ' + file.name, 'success');
-    }
-    window.handlePaymentAttachment = handlePaymentAttachment;
 
     // ========== NOVAS FUNÇÕES: Pagamento de Obras ==========
     function renderPagamentoObrasList() {
@@ -2493,7 +2226,6 @@
                 <input type="date" class="field-input" id="pag-vista-data-${idx}" value="${pagamento.dataPagamento || ''}">
               </div>
             </div>
-            ${renderAttachmentControl('obra', idx, 'vista', 'Anexar comprovante ou boleto')}
             <button class="btn-primary" onclick="confirmarPagamentoVista(${idx})">Confirmar Pagamento</button>
           </div>
           <div id="pag-parcelado-${idx}" style="display:${isParcelado ? 'block' : 'none'}">
@@ -2513,7 +2245,7 @@
             </div>
             <button class="btn-primary" onclick="gerarParcelasObra(${idx})">Gerar Parcelas</button>
             <div id="pag-parcelas-tabela-${idx}" style="margin-top:12px">
-              ${isParcelado && pagamento.parcelas ? renderTabelaParcelas(pagamento.parcelas, obra.valor, 'obra', idx) : ''}
+              ${isParcelado && pagamento.parcelas ? renderTabelaParcelas(pagamento.parcelas, obra.valor) : ''}
             </div>
           </div>
         </div>
@@ -2617,7 +2349,6 @@
                 <input type="date" class="field-input" id="art-vista-data-${idx}" value="${art.pagamento && art.pagamento.dataPagamento || ''}">
               </div>
             </div>
-            ${renderAttachmentControl('art', idx, 'vista', 'Anexar comprovante ou boleto')}
             <button class="btn-primary" onclick="confirmarArtVista(${idx})">Confirmar Pagamento ART</button>
           </div>
           <div id="art-parcelado-${idx}" style="display:${isParcelado ? 'block' : 'none'}">
@@ -2637,7 +2368,7 @@
             </div>
             <button class="btn-primary" onclick="gerarParcelasArt(${idx})">Gerar Parcelas ART</button>
             <div id="art-parcelas-tabela-${idx}" style="margin-top:12px">
-              ${isParcelado && art.pagamento && art.pagamento.parcelas ? renderTabelaParcelas(art.pagamento.parcelas, art.valorAcordado, 'art', idx) : ''}
+              ${isParcelado && art.pagamento && art.pagamento.parcelas ? renderTabelaParcelas(art.pagamento.parcelas, art.valorAcordado) : ''}
             </div>
           </div>
         </div>
@@ -2712,13 +2443,13 @@
       return parcelas;
     }
 
-    function renderTabelaParcelas(parcelas, valorRefStr, context = 'obra', ownerIdx = 0) {
+    function renderTabelaParcelas(parcelas, valorRefStr) {
       const parseValor = (v) => parseFloat((v || '0').replace(/[^\d,]/g, '').replace(',', '.')) || 0;
       const valorRef = parseValor(valorRefStr);
       return `
     <table class="pay-table">
       <thead><tr>
-        <th>Nº</th><th>Data</th><th>Valor</th><th>Percentual</th><th>Anexo</th>
+        <th>Nº</th><th>Data</th><th>Valor</th><th>Percentual</th>
       </tr></thead>
       <tbody>
         ${parcelas.map((p, i) => `<tr class="pay-table-row">
@@ -2726,12 +2457,10 @@
           <td>${p.data}</td>
           <td>${p.valor}</td>
           <td>${p.percentual}</td>
-          <td>${renderAttachmentControl(context, ownerIdx, i + 1, 'Anexar')}</td>
         </tr>`).join('')}
       </tbody>
     </table>`;
     }
-
 
     // ========== NOVAS FUNÇÕES: Cadastro e Lista de Profissionais ==========
     function saveProfissional() {
@@ -2849,7 +2578,7 @@
       showToast('Treinamento atribuído com sucesso!', 'success');
     }
 
-    // ========== NOVAS FUNÇÕES: CCD Mensal ==========
+    // ========== NOVAS FUNÇÕES: CND Mensal ==========
     const mesesNomes = ['', 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
     function renderCndTable() {
@@ -2858,7 +2587,7 @@
       container.innerHTML = `
     <div style="margin-bottom:8px;color:var(--txt-sub);font-size:14px">Ano: ${ano}</div>
     <table class="cnd-table-inner">
-      <thead><tr><th>Mês</th><th>Valor Pago</th><th>Status</th><th>Boleto / Comprovante</th></tr></thead>
+      <thead><tr><th>Mês</th><th>Valor Pago</th><th>Status</th></tr></thead>
       <tbody>
         ${Object.keys(state.cnd.meses).map(m => {
         const mes = parseInt(m);
@@ -2868,7 +2597,6 @@
             <td class="cnd-month">${mesesNomes[mes]}</td>
             <td><input type="text" class="cnd-input" data-month="${mes}" value="${valor > 0 ? 'R$ ' + valor.toFixed(2).replace('.', ',') : ''}" placeholder="R$ 0,00" inputmode="numeric" onchange="updateCndMonth(${mes}, this.value)"></td>
             <td><span class="cnd-status ${pago ? 'paid' : 'pending'}">${pago ? 'Pago' : 'Pendente'}</span></td>
-            <td>${renderAttachmentControl('cdd', 0, mes, 'Anexar')}</td>
           </tr>`;
       }).join('')}
       </tbody>
@@ -2904,7 +2632,7 @@
     // ========== NOVAS FUNÇÕES: Equipamentos ==========
     function renderEquipamentos() {
       const container = document.getElementById('equipamentos-lista');
-      if (!state.equipamentos.length) { container.innerHTML = '<p class="stat-sub">Nenhuma ferramenta cadastrada.</p>'; updateEquipStats(); return; }
+      if (!state.equipamentos.length) { container.innerHTML = '<p class="stat-sub">Nenhum equipamento cadastrado.</p>'; updateEquipStats(); return; }
       container.innerHTML = state.equipamentos.map((eq, idx) => {
         const disponivel = eq.total - eq.emUso;
         return `
@@ -2947,17 +2675,15 @@
 
     function removeEquipamento(idx) {
       const nome = state.equipamentos[idx].nome;
-      if (!confirm(`Excluir "${nome}" da lista de ferramentas?`)) return;
+      if (!confirm(`Excluir "${nome}" do estoque?`)) return;
       state.equipamentos.splice(idx, 1);
       renderEquipamentos();
-      showToast(`"${nome}" removida.`, 'success');
+      showToast(`"${nome}" removido.`, 'success');
     }
 
     function openEquipModal() {
       document.getElementById('equip-modal').classList.add('open');
       document.getElementById('new-equip-input').value = '';
-      document.getElementById('new-equip-total').value = '';
-      document.getElementById('new-equip-em-uso').value = '';
       document.getElementById('new-equip-input').focus();
     }
 
@@ -2967,12 +2693,9 @@
 
     function confirmAddEquip() {
       const v = normalizeEpiName(document.getElementById('new-equip-input').value);
-      const total = Math.max(0, parseInt(document.getElementById('new-equip-total').value, 10) || 0);
-      const emUsoDigitado = Math.max(0, parseInt(document.getElementById('new-equip-em-uso').value, 10) || 0);
-      const emUso = Math.min(emUsoDigitado, total);
       if (!v) return showToast('Informe o nome do equipamento.', 'error');
-      if (state.equipamentos.find(e => e.nome.toLowerCase() === v.toLowerCase())) return showToast('Ferramenta já cadastrada.', 'error');
-      state.equipamentos.push({ nome: v, total, emUso });
+      if (state.equipamentos.find(e => e.nome.toLowerCase() === v.toLowerCase())) return showToast('Equipamento já cadastrado.', 'error');
+      state.equipamentos.push({ nome: v, total: 0, emUso: 0 });
       renderEquipamentos();
       closeEquipModal();
       showToast('"' + v + '" adicionado com sucesso!', 'success');
@@ -3052,6 +2775,202 @@
     updateEquipStats();
 
   </script>
+
+  <script>
+    // ========== INTEGRAÇÃO SUPABASE ==========
+    // Projeto: Site Belfort Engenharia
+    // Project ref: anenzougmpqekaagmpxi
+    // URL calculada pelo ref informado.
+    // IMPORTANTE: cole abaixo a ANON PUBLIC KEY do Supabase em Project Settings > API.
+    // Nunca coloque service_role key no front-end.
+    const BELFORT_SUPABASE_URL = 'https://anenzougmpqekaagmpxi.supabase.co';
+    const BELFORT_SUPABASE_ANON_KEY = 'sb_publishable_4LC3TYv95xUuMVR9aR5B-A_rW4ZZjSA';
+    const BELFORT_STATE_ID = 'main';
+    const BELFORT_BUCKET = 'belfort-anexos';
+
+    const supabaseConfigured =
+      typeof window.supabase !== 'undefined' &&
+      BELFORT_SUPABASE_ANON_KEY &&
+      !BELFORT_SUPABASE_ANON_KEY.includes('COLE_AQUI');
+
+    const belfortDb = supabaseConfigured
+      ? window.supabase.createClient(BELFORT_SUPABASE_URL, BELFORT_SUPABASE_ANON_KEY)
+      : null;
+
+    function isSupabaseReady(showMessage = false) {
+      if (belfortDb) return true;
+      if (showMessage && typeof showToast === 'function') {
+        showToast('Supabase ainda não configurado: cole a anon public key no index.html.', 'error');
+      }
+      return false;
+    }
+
+    function sanitizeStateForDatabase(value) {
+      return JSON.parse(JSON.stringify(value, (key, val) => {
+        if (val instanceof File) return undefined;
+        if (val instanceof HTMLElement) return undefined;
+        if (typeof val === 'function') return undefined;
+        return val;
+      }));
+    }
+
+    function hydrateStateFromDatabase(saved) {
+      if (!saved || typeof saved !== 'object') return;
+      const protectedKeys = ['sidebarCollapsed'];
+      Object.keys(saved).forEach(key => {
+        if (protectedKeys.includes(key)) return;
+        state[key] = saved[key];
+      });
+    }
+
+    function rerenderEverythingAfterDatabaseLoad() {
+      try {
+        updateEpiRegistradosCount();
+        updateClienteCards();
+        updateObraOptions();
+        renderClientesList();
+        renderObrasDoCliente();
+        renderNotifications();
+        renderEstoque();
+        updatePagamentoObrasStats();
+        updateClientesListaStats();
+        updateProfCount();
+        updateProfListaStats();
+        updateEquipStats();
+        if (document.getElementById('clientes-count')) document.getElementById('clientes-count').textContent = state.clientes.length;
+        if (document.getElementById('obras-count')) document.getElementById('obras-count').textContent = state.obras.length;
+        const activePage = document.querySelector('.page.active');
+        if (activePage && activePage.id) {
+          const pageId = activePage.id.replace('page-', '');
+          if (pageId === 'pagamento-obras') renderPagamentoObrasList();
+          if (pageId === 'clientes-lista') renderClientesLista();
+          if (pageId === 'profissionais-lista') renderProfissionaisList();
+          if (pageId === 'documentos-gerais') renderCndTable();
+          if (pageId === 'equipamentos') renderEquipamentos();
+        }
+      } catch (err) {
+        console.error('Erro ao atualizar tela após carregar Supabase:', err);
+      }
+    }
+
+    async function loadBelfortStateFromSupabase() {
+      if (!isSupabaseReady(false)) {
+        console.warn('Supabase não iniciado. Cole a anon public key em BELFORT_SUPABASE_ANON_KEY.');
+        return;
+      }
+      const { data, error } = await belfortDb
+        .from('belfort_app_state')
+        .select('data')
+        .eq('id', BELFORT_STATE_ID)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Erro ao carregar estado do Supabase:', error);
+        showToast('Não foi possível carregar dados do Supabase.', 'error');
+        return;
+      }
+
+      if (data && data.data) {
+        hydrateStateFromDatabase(data.data);
+        rerenderEverythingAfterDatabaseLoad();
+        showToast('Dados carregados do Supabase.', 'success');
+      } else {
+        await saveBelfortStateToSupabase(false);
+      }
+    }
+
+    let supabaseSaveTimer;
+    async function saveBelfortStateToSupabase(showSuccess = false) {
+      if (!isSupabaseReady(false)) return;
+      const payload = sanitizeStateForDatabase(state);
+      const { error } = await belfortDb
+        .from('belfort_app_state')
+        .upsert({ id: BELFORT_STATE_ID, data: payload, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+
+      if (error) {
+        console.error('Erro ao salvar no Supabase:', error);
+        if (showSuccess) showToast('Erro ao salvar no Supabase.', 'error');
+        return;
+      }
+      if (showSuccess) showToast('Dados salvos no Supabase.', 'success');
+    }
+
+    function scheduleSupabaseSave() {
+      if (!isSupabaseReady(false)) return;
+      clearTimeout(supabaseSaveTimer);
+      supabaseSaveTimer = setTimeout(() => saveBelfortStateToSupabase(false), 600);
+    }
+
+    async function uploadBelfortAttachment(context, ownerIdx, itemIdx, file) {
+      if (!isSupabaseReady(true)) return null;
+      const safeName = file.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9._-]+/g, '-');
+      const path = `${context}/${ownerIdx}/${itemIdx}/${Date.now()}-${safeName}`;
+      const { error: uploadError } = await belfortDb.storage
+        .from(BELFORT_BUCKET)
+        .upload(path, file, { upsert: false, contentType: file.type || 'application/octet-stream' });
+
+      if (uploadError) {
+        console.error('Erro ao enviar anexo:', uploadError);
+        showToast('Erro ao enviar anexo para o Supabase Storage.', 'error');
+        return null;
+      }
+
+      const { data: publicUrlData } = belfortDb.storage.from(BELFORT_BUCKET).getPublicUrl(path);
+      const meta = {
+        context,
+        owner_idx: String(ownerIdx),
+        item_idx: String(itemIdx),
+        file_name: file.name,
+        file_path: path,
+        file_url: publicUrlData && publicUrlData.publicUrl ? publicUrlData.publicUrl : null,
+        mime_type: file.type || null,
+        size_bytes: file.size || null,
+        created_at: new Date().toISOString()
+      };
+
+      const { error: metaError } = await belfortDb.from('belfort_anexos').insert(meta);
+      if (metaError) console.error('Erro ao salvar metadados do anexo:', metaError);
+      return meta;
+    }
+
+    const originalHandlePaymentAttachment = window.handlePaymentAttachment;
+    window.handlePaymentAttachment = async function (context, ownerIdx, itemIdx, input) {
+      const file = input.files && input.files[0];
+      if (!file) return;
+
+      if (typeof originalHandlePaymentAttachment === 'function') {
+        originalHandlePaymentAttachment(context, ownerIdx, itemIdx, input);
+      }
+
+      const uploaded = await uploadBelfortAttachment(context, ownerIdx, itemIdx, file);
+      if (uploaded) {
+        const bucket = getAttachmentBucket(context, ownerIdx);
+        bucket[itemIdx] = uploaded.file_name;
+        bucket[itemIdx + '_path'] = uploaded.file_path;
+        bucket[itemIdx + '_url'] = uploaded.file_url;
+        const display = document.getElementById(`attach-name-${context}-${ownerIdx}-${itemIdx}`);
+        if (display) display.textContent = uploaded.file_name;
+        await saveBelfortStateToSupabase(false);
+        showToast('Anexo enviado e salvo no Supabase.', 'success');
+      }
+    };
+
+    document.addEventListener('click', event => {
+      const shouldSave = event.target.closest('button, .epi-item, .doc-check, .pay-type-btn, .estoque-step-btn, .estoque-remove-btn, .file-del');
+      if (shouldSave) scheduleSupabaseSave();
+    });
+
+    document.addEventListener('change', event => {
+      if (event.target.matches('input, select, textarea')) scheduleSupabaseSave();
+    });
+
+    window.addEventListener('beforeunload', () => {
+      if (belfortDb) saveBelfortStateToSupabase(false);
+    });
+
+    loadBelfortStateFromSupabase();
+  </script>
+
 </body>
 
 </html>
