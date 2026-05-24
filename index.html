@@ -10,9 +10,63 @@
     href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="belfort-auth-utils.js"></script>
+  <script src="belfort-supabase.js"></script>
 </head>
 
 <body>
+  <section class="auth-shell" id="auth-shell">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <div class="auth-mark">BE</div>
+        <div>
+          <strong>BELFORT</strong>
+          <span>ACESSO SEGURO</span>
+        </div>
+      </div>
+
+      <form class="auth-panel active" id="auth-login-panel">
+        <p class="auth-kicker">Entrar no painel</p>
+        <h1>Acesso restrito</h1>
+        <p class="auth-copy">Informe seu email e o código único de segurança.</p>
+        <div class="field"><label class="field-label">Usuário / Email</label><input class="field-input" id="auth-login-email" type="email" autocomplete="email" required></div>
+        <div class="field"><label class="field-label">Código único de segurança</label><input class="field-input" id="auth-login-code" type="password" autocomplete="current-password" required></div>
+        <button class="btn-primary auth-submit" type="submit">Entrar</button>
+        <div class="auth-links"><button type="button" data-auth-mode="register">Cadastrar</button><button type="button" data-auth-mode="recover">Esqueceu senha ou código de segurança?</button></div>
+      </form>
+
+      <form class="auth-panel" id="auth-register-panel">
+        <p class="auth-kicker">Criar usuário</p>
+        <h1>Cadastro</h1>
+        <p class="auth-copy">Cadastre seus dados. Depois será gerado seu código único de segurança.</p>
+        <div class="field"><label class="field-label">Nome</label><input class="field-input" id="auth-register-name" type="text" autocomplete="name" required></div>
+        <div class="field"><label class="field-label">Email</label><input class="field-input" id="auth-register-email" type="email" autocomplete="email" required></div>
+        <div class="field"><label class="field-label">Senha de recuperação</label><input class="field-input" id="auth-register-password" type="password" autocomplete="new-password" minlength="6" required></div>
+        <button class="btn-primary auth-submit" type="submit">Cadastrar</button>
+        <div class="auth-links"><button type="button" data-auth-mode="login">Entrar</button><button type="button" data-auth-mode="recover">Esqueceu senha ou código de segurança?</button></div>
+      </form>
+
+      <div class="auth-panel" id="auth-code-panel">
+        <p class="auth-kicker">Código gerado</p>
+        <h1>Guarde seu código</h1>
+        <p class="auth-copy">Esse código será usado para entrar no painel e não será exibido novamente.</p>
+        <div class="security-code-box" id="auth-generated-code"></div>
+        <button class="btn-primary auth-submit" id="auth-copy-code" type="button">Copiar código</button>
+        <button class="btn-ghost auth-submit" data-auth-mode="login" type="button">Ir para entrada</button>
+      </div>
+
+      <div class="auth-panel" id="auth-recover-panel">
+        <p class="auth-kicker">Recuperação</p>
+        <h1>Recuperar acesso</h1>
+        <p class="auth-copy">Para manter a segurança, solicite ao administrador a geração de um novo código de segurança.</p>
+        <button class="btn-ghost auth-submit" data-auth-mode="login" type="button">Voltar para entrada</button>
+      </div>
+
+      <div class="auth-message" id="auth-message" role="status"></div>
+    </div>
+  </section>
+
   <div class="app">
 
     <aside class="sidebar">
@@ -41,19 +95,6 @@
 
       <div class="sb-section-label">Gestão</div>
       <nav class="sb-nav">
-        <button class="sb-item active" data-page="epi">
-          <span class="sb-item-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            </svg>
-          </span>
-          <span class="sb-item-label">Ficha de EPI</span>
-          <span class="sb-item-arrow">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </span>
-        </button>
         <button class="sb-item" data-page="clientes">
           <span class="sb-item-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -1184,10 +1225,48 @@
     </div>
   </div>
 
-  <!-- Supabase client: necessário para persistir dados no banco -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <script>
+    let currentProfile = null;
+    let dashboardDataLoaded = false;
+
+    function setAuthMessage(message, type = '') {
+      const el = document.getElementById('auth-message');
+      el.textContent = message || '';
+      el.className = 'auth-message' + (type ? ' ' + type : '');
+    }
+
+    function showAuthPanel(mode) {
+      document.querySelectorAll('.auth-panel').forEach(panel => panel.classList.remove('active'));
+      document.getElementById('auth-' + mode + '-panel').classList.add('active');
+      setAuthMessage('');
+    }
+
+    function showDashboard() {
+      document.getElementById('auth-shell').classList.add('hidden');
+    }
+
+    function showAuth() {
+      document.getElementById('auth-shell').classList.remove('hidden');
+    }
+
+    async function bootAuth() {
+      try {
+        const session = await window.BelfortSupabase.getSession();
+        if (!session) {
+          showAuth();
+          showAuthPanel('login');
+          return;
+        }
+        currentProfile = await window.BelfortSupabase.getProfile();
+        await loadDataFromSupabase();
+        showDashboard();
+      } catch (error) {
+        showAuth();
+        showAuthPanel('login');
+        setAuthMessage(error.message || 'Não foi possível validar sua sessão.', 'error');
+      }
+    }
+
     function showPage(id) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
@@ -1260,7 +1339,15 @@
       return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>';
     }
 
-    function removeEpiByName(name) {
+    async function removeEpiByName(name) {
+      const item = state.estoqueEpis.find(epi => epi.nome.toLowerCase() === name.toLowerCase());
+      if (item && item.id && currentProfile) {
+        try {
+          await window.BelfortSupabase.removeEpiItem(currentProfile, item);
+        } catch (error) {
+          return showToast(error.message || 'Erro ao remover EPI no banco.', 'error');
+        }
+      }
       state.estoqueEpis = state.estoqueEpis.filter(epi => epi.nome.toLowerCase() !== name.toLowerCase());
       document.querySelectorAll('.epi-item').forEach(item => {
         if ((item.dataset.name || '').toLowerCase() === name.toLowerCase()) {
@@ -1316,7 +1403,7 @@
       document.getElementById('epi-modal').classList.remove('open');
     }
 
-    function confirmAddEpi() {
+    async function confirmAddEpi() {
       const v = normalizeEpiName(document.getElementById('new-epi-input').value);
       if (!v) return;
       const grid = document.getElementById('epi-grid');
@@ -1328,7 +1415,9 @@
       grid.appendChild(div);
       updateEpiRegistradosCount();
       if (!state.estoqueEpis.find(item => item.nome.toLowerCase() === v.toLowerCase())) {
-        state.estoqueEpis.push({ nome: v, total: 0, emUso: 0 });
+        const item = { nome: v, total: 0, emUso: 0 };
+        if (!(await persistEpiItem(item))) return;
+        state.estoqueEpis.push(item);
         renderEstoque();
       }
       closeModal();
@@ -1349,6 +1438,30 @@
       return normalized.charAt(0).toUpperCase() + normalized.slice(1);
     }
 
+    async function persistEpiItem(item) {
+      if (!currentProfile) return true;
+      try {
+        const saved = await window.BelfortSupabase.saveEpiItem(currentProfile, item);
+        item.id = saved.id;
+        return true;
+      } catch (error) {
+        showToast(error.message || 'Erro ao salvar EPI no banco.', 'error');
+        return false;
+      }
+    }
+
+    async function persistEquipamento(item) {
+      if (!currentProfile) return true;
+      try {
+        const saved = await window.BelfortSupabase.saveEquipamento(currentProfile, item);
+        item.id = saved.id;
+        return true;
+      } catch (error) {
+        showToast(error.message || 'Erro ao salvar equipamento no banco.', 'error');
+        return false;
+      }
+    }
+
     function applyRealtimeCapitalization(inputElement) {
       if (!inputElement) return;
       inputElement.addEventListener('input', () => {
@@ -1366,7 +1479,7 @@
     const newEpiInput = document.getElementById('new-epi-input');
     applyRealtimeCapitalization(newEpiInput);
 
-    document.getElementById('btn-reset-epi-form').addEventListener('click', () => {
+    document.getElementById('btn-reset-epi-form').addEventListener('click', async () => {
       newEpiInput.value = '';
       clearFieldErrors([newEpiInput]);
 
@@ -1392,20 +1505,58 @@
         grid.appendChild(div);
       });
 
-      mergedEpis.forEach(name => {
+      for (const name of mergedEpis) {
         if (!state.estoqueEpis.some(item => item.nome.toLowerCase() === name.toLowerCase())) {
-          state.estoqueEpis.push({ nome: name, total: 0, emUso: 0 });
+          const item = { nome: name, total: 0, emUso: 0 };
+          if (await persistEpiItem(item)) {
+            state.estoqueEpis.push(item);
+          }
         }
-      });
+      }
 
       updateEpiRegistradosCount();
       renderEstoque();
       showToast('Lista base de EPIs restaurada com sucesso.', 'success');
     });
 
+    const defaultDocumentStatuses = Array.from(document.querySelectorAll('.doc-check')).map(item => ({
+      nome: item.querySelector('.doc-check-title')?.textContent.trim() || 'Documento',
+      checked: false
+    }));
+
+    function applyDocumentChecklist(documentos) {
+      const statusByName = new Map((documentos || []).map(doc => [doc.nome, !!doc.checked]));
+      document.querySelectorAll('.doc-check').forEach(item => {
+        const nome = item.querySelector('.doc-check-title')?.textContent.trim() || 'Documento';
+        item.classList.toggle('checked', statusByName.get(nome) || false);
+      });
+    }
+
     function toggleDocCheck(el) {
       el.classList.toggle('checked');
     }
+    window.toggleDocCheck = toggleDocCheck;
+
+    function collectDocumentChecklist() {
+      return Array.from(document.querySelectorAll('.doc-check')).map(item => ({
+        nome: item.querySelector('.doc-check-title')?.textContent.trim() || 'Documento',
+        checked: item.classList.contains('checked')
+      }));
+    }
+
+    function getSelectedDocumentObra() {
+      const select = document.getElementById('documento-obra');
+      const obraIndex = Number(select.value);
+      if (!Number.isInteger(obraIndex) || obraIndex < 0) return null;
+      return state.obras[obraIndex] || null;
+    }
+
+    function updateDocumentChecklistForSelectedObra() {
+      const obra = getSelectedDocumentObra();
+      applyDocumentChecklist(obra?.documentos || defaultDocumentStatuses);
+    }
+
+    document.getElementById('documento-obra').addEventListener('change', updateDocumentChecklistForSelectedObra);
 
     const dropzone = document.getElementById('dropzone');
     const fileInput = document.getElementById('file-input');
@@ -1432,9 +1583,18 @@
 
     fileInput.addEventListener('change', () => addFiles(fileInput.files));
 
-    function addFiles(files) {
+    async function addFiles(files) {
+      const fileArray = Array.from(files);
+      if (!fileArray.length) return;
+      if (currentProfile) {
+        try {
+          await window.BelfortSupabase.insertDocumentoAnexos(currentProfile, fileArray);
+        } catch (error) {
+          return showToast(error.message || 'Erro ao salvar anexos no banco.', 'error');
+        }
+      }
       const list = document.getElementById('files-list');
-      Array.from(files).forEach(f => {
+      fileArray.forEach(f => {
         const ext = f.name.split('.').pop().toUpperCase();
         const size = f.size > 1048576 ? (f.size / 1048576).toFixed(1) + ' MB' : Math.round(f.size / 1024) + ' KB';
         const item = document.createElement('div');
@@ -1442,6 +1602,7 @@
         item.innerHTML = '<div class="file-ext">' + ext + '</div><div class="file-info"><span class="file-name">' + f.name + '</span><span class="file-size">' + size + '</span></div><button class="file-del" onclick="this.parentElement.remove()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
         list.appendChild(item);
       });
+      showToast('Anexo salvo no banco.', 'success');
     }
 
     function renderClientesList() {
@@ -1793,7 +1954,7 @@
       selectCliente(Number(event.target.value));
     });
 
-    document.getElementById('btn-save-cliente').addEventListener('click', () => {
+    document.getElementById('btn-save-cliente').addEventListener('click', async () => {
       const clienteInputs = [
         document.getElementById('cliente-nome'),
         document.getElementById('cliente-doc-numero'),
@@ -1839,8 +2000,17 @@
         documento: `${docType}: ${docDigits}`,
         telefone: document.getElementById('cliente-telefone').value.trim(),
         email: document.getElementById('cliente-email').value.trim(),
-        endereco: enderecoCompleto
+        endereco
       };
+
+      if (currentProfile) {
+        try {
+          const savedCliente = await window.BelfortSupabase.insertCliente(currentProfile, cliente);
+          cliente.id = savedCliente.id;
+        } catch (error) {
+          return showToast(error.message || 'Erro ao salvar cliente no banco.', 'error');
+        }
+      }
 
       state.clientes.push(cliente);
       document.getElementById('clientes-count').textContent = state.clientes.length;
@@ -1854,7 +2024,7 @@
       }
     });
 
-    document.getElementById('btn-save-obra').addEventListener('click', () => {
+    document.getElementById('btn-save-obra').addEventListener('click', async () => {
       const obraClienteSelect = document.getElementById('obra-cliente-select');
       if (obraClienteSelect.value !== '') {
         state.selectedClienteIndex = Number(obraClienteSelect.value);
@@ -1903,6 +2073,18 @@
         clienteNome: state.clientes[state.selectedClienteIndex].nome
       };
 
+      if (currentProfile) {
+        const clienteId = state.clientes[state.selectedClienteIndex].id;
+        if (!clienteId) return showToast('Cliente ainda não está sincronizado com o banco.', 'error');
+        try {
+          const savedObra = await window.BelfortSupabase.insertObra(currentProfile, obra, clienteId);
+          obra.id = savedObra.id;
+          obra.clienteId = clienteId;
+        } catch (error) {
+          return showToast(error.message || 'Erro ao salvar obra no banco.', 'error');
+        }
+      }
+
       state.obras.push(obra);
       document.getElementById('obras-count').textContent = state.obras.length;
       renderObrasDoCliente();
@@ -1913,10 +2095,19 @@
       showToast('Cadastro de obra realizado com sucesso!', 'success');
     });
 
-    document.getElementById('btn-update-docs').addEventListener('click', () => {
-      const obra = document.getElementById('documento-obra').selectedOptions[0]?.textContent;
-      if (!document.getElementById('documento-obra').value) return showToast('Selecione uma obra para atualizar documentos.', 'error');
-      addNotification('Documentos', `Documentos atualizados para "${obra}".`, 'documentos', '#documento-obra');
+    document.getElementById('btn-update-docs').addEventListener('click', async () => {
+      const selectedObra = getSelectedDocumentObra();
+      if (!selectedObra) return showToast('Selecione uma obra para atualizar documentos.', 'error');
+      if (currentProfile) {
+        if (!selectedObra.id) return showToast('Obra ainda não está sincronizada com o banco.', 'error');
+        try {
+          await window.BelfortSupabase.upsertObraDocumentos(currentProfile, selectedObra.id, collectDocumentChecklist());
+        } catch (error) {
+          return showToast(error.message || 'Erro ao salvar documentos no banco.', 'error');
+        }
+      }
+      selectedObra.documentos = collectDocumentChecklist();
+      addNotification('Documentos', `Documentos atualizados para "${selectedObra.descricao}".`, 'documentos', '#documento-obra');
       showToast('Documentos atualizados com sucesso!', 'success');
     });
 
@@ -1927,28 +2118,48 @@
 
     document.getElementById('btn-view-clientes').addEventListener('click', () => toggleCard('clientes-list-card'));
 
-    function addNotification(tag, description, targetPage = 'notificacoes', targetSelector = '') {
-      state.notifications.unshift({
+    async function addNotification(tag, description, targetPage = 'notificacoes', targetSelector = '') {
+      const notification = {
         tag,
         description,
         time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
         unread: true,
         targetPage,
         targetSelector
-      });
+      };
+      if (currentProfile) {
+        try {
+          const saved = await window.BelfortSupabase.insertNotification(currentProfile, notification);
+          notification.id = saved.id;
+        } catch (error) {
+          return showToast(error.message || 'Erro ao salvar notificação no banco.', 'error');
+        }
+      }
+      state.notifications.unshift(notification);
       renderNotifications();
     }
 
-    function markNotificationAsRead(index) {
+    async function markNotificationAsRead(index) {
       if (!state.notifications[index]) return;
-      state.notifications[index].unread = false;
+      const notification = state.notifications[index];
+      const previousUnread = notification.unread;
+      notification.unread = false;
       renderNotifications();
+      if (currentProfile && notification.id) {
+        try {
+          await window.BelfortSupabase.markNotificationRead(currentProfile, notification.id);
+        } catch (error) {
+          notification.unread = previousUnread;
+          renderNotifications();
+          showToast(error.message || 'Erro ao marcar notificação como lida.', 'error');
+        }
+      }
     }
 
-    function openNotification(index) {
+    async function openNotification(index) {
       const notification = state.notifications[index];
       if (!notification) return;
-      markNotificationAsRead(index);
+      await markNotificationAsRead(index);
       showPage(notification.targetPage || 'notificacoes');
       if (notification.targetSelector) {
         const target = document.querySelector(notification.targetSelector);
@@ -2027,11 +2238,11 @@
       item.emUso = Math.min(item.emUso, item.total);
     }
 
-    document.getElementById('estoque-lista').addEventListener('click', event => {
+    document.getElementById('estoque-lista').addEventListener('click', async event => {
       const removeBtn = event.target.closest('.estoque-remove-btn');
       if (removeBtn) {
         const nome = removeBtn.dataset.name;
-        if (nome) removeEpiByName(nome);
+        if (nome) await removeEpiByName(nome);
         return;
       }
 
@@ -2042,6 +2253,7 @@
       const item = state.estoqueEpis.find(epi => epi.nome === nome);
       if (!item) return;
 
+      const previous = { total: item.total, emUso: item.emUso };
       const action = button.dataset.action;
       if (action === 'increase' || action === 'decrease') {
         const step = action === 'increase' ? 1 : -1;
@@ -2057,10 +2269,14 @@
       }
 
       clampEstoqueItem(item);
+      if (!(await persistEpiItem(item))) {
+        item.total = previous.total;
+        item.emUso = previous.emUso;
+      }
       renderEstoque();
     });
 
-    document.getElementById('estoque-lista').addEventListener('change', event => {
+    document.getElementById('estoque-lista').addEventListener('change', async event => {
       const input = event.target.closest('.estoque-input');
       if (!input) return;
 
@@ -2068,23 +2284,20 @@
       const item = state.estoqueEpis.find(epi => epi.nome === nome);
       if (!item) return;
 
+      const previous = { total: item.total, emUso: item.emUso };
       const requested = Number(input.value);
-      if (Number.isFinite(requested)) {
+      if (input.dataset.field === 'emUso') {
+        item.emUso = requested;
+      } else {
         item.total = requested;
       }
       clampEstoqueItem(item);
+      if (!(await persistEpiItem(item))) {
+        item.total = previous.total;
+        item.emUso = previous.emUso;
+      }
       renderEstoque();
     });
-
-    renderNotifications();
-    renderEstoque();
-    updateEpiRegistradosCount();
-    setupCustomDocumentSelect();
-    applyDocType('CPF');
-    updateClienteCards();
-    renderClientesList();
-    renderObrasDoCliente();
-    updateObraOptions();
 
     let toastTimer;
     function showToast(msg, type = 'success') {
@@ -2162,10 +2375,133 @@
       }
     };
 
-    // Carregar CND do localStorage
-    const cndSalvo = localStorage.getItem('cnd');
-    if (cndSalvo) {
-      try { state.cnd = JSON.parse(cndSalvo); } catch (e) { }
+    function formatDbMoney(value) {
+      return value ? `R$ ${Number(value || 0).toFixed(2).replace('.', ',')}` : '';
+    }
+
+    function mapDbParcelas(rows) {
+      return (rows || [])
+        .slice()
+        .sort((a, b) => a.numero - b.numero)
+        .map(row => ({
+          data: row.vencimento || '',
+          valor: formatDbMoney(row.valor),
+          percentual: ''
+        }));
+    }
+
+    function mapDbCliente(row) {
+      const artRow = row.cliente_art_pagamentos && row.cliente_art_pagamentos[0];
+      const cliente = {
+        id: row.id,
+        nome: row.nome,
+        documento: `${row.documento_tipo}: ${row.documento_numero}`,
+        telefone: row.telefone || '',
+        email: row.email || '',
+        endereco: {
+          cep: row.endereco_cep || '', logradouro: row.endereco_logradouro || '', numero: row.endereco_numero || '',
+          complemento: row.endereco_complemento || '', bairro: row.endereco_bairro || '', cidade: row.endereco_cidade || '', uf: row.endereco_uf || ''
+        }
+      };
+      if (artRow) {
+        cliente.art = {
+          valorAcordado: formatDbMoney(artRow.valor_acordado),
+          pagamento: {
+            tipo: artRow.tipo,
+            valorPago: formatDbMoney(artRow.valor_pago),
+            dataPagamento: artRow.data_pagamento || '',
+            entrada: formatDbMoney(artRow.entrada),
+            valorParcela: formatDbMoney(artRow.valor_parcela),
+            quantidadeParcelas: artRow.quantidade_parcelas || '',
+            parcelas: mapDbParcelas(artRow.cliente_art_parcelas)
+          }
+        };
+      }
+      return cliente;
+    }
+
+    function mapDbObra(row, clientes) {
+      const clienteIndex = clientes.findIndex(cliente => cliente.id === row.cliente_id);
+      const pagamentoRow = row.obra_pagamentos && row.obra_pagamentos[0];
+      const obra = {
+        id: row.id,
+        descricao: row.descricao,
+        dataInicio: row.data_inicio,
+        dataTermino: row.data_termino,
+        valor: `R$ ${Number(row.valor || 0).toFixed(2).replace('.', ',')}`,
+        endereco: {
+          cep: row.endereco_cep || '', logradouro: row.endereco_logradouro || '', numero: row.endereco_numero || '',
+          complemento: row.endereco_complemento || '', bairro: row.endereco_bairro || '', cidade: row.endereco_cidade || '', uf: row.endereco_uf || ''
+        },
+        clienteIndex,
+        clienteId: row.cliente_id,
+        clienteNome: clientes[clienteIndex]?.nome || 'Cliente'
+      };
+      if (pagamentoRow) {
+        obra.pagamento = {
+          tipo: pagamentoRow.tipo,
+          valorPago: formatDbMoney(pagamentoRow.valor_pago),
+          dataPagamento: pagamentoRow.data_pagamento || '',
+          entrada: formatDbMoney(pagamentoRow.entrada),
+          valorParcela: formatDbMoney(pagamentoRow.valor_parcela),
+          quantidadeParcelas: pagamentoRow.quantidade_parcelas || '',
+          parcelas: mapDbParcelas(pagamentoRow.obra_pagamento_parcelas)
+        };
+      }
+      if (row.obra_documentos) {
+        obra.documentos = row.obra_documentos.map(doc => ({ nome: doc.nome, checked: !!doc.checked }));
+      } else {
+        obra.documentos = defaultDocumentStatuses.map(doc => ({ ...doc }));
+      }
+      return obra;
+    }
+
+    function mapDbStock(row, relationName) {
+      const stock = row[relationName] && row[relationName][0] ? row[relationName][0] : {};
+      return { id: row.id, nome: row.nome, total: stock.total || 0, emUso: stock.em_uso || 0 };
+    }
+
+    async function loadDataFromSupabase() {
+      if (!currentProfile) return;
+      const data = await window.BelfortSupabase.loadDashboardData(currentProfile);
+      state.clientes = data.clientes.map(mapDbCliente);
+      state.obras = data.obras.map(row => mapDbObra(row, state.clientes));
+      state.estoqueEpis = data.epis.map(row => mapDbStock(row, 'epi_estoque'));
+      state.equipamentos = data.equipamentos.map(row => mapDbStock(row, 'equipamento_estoque'));
+      state.profissionais = data.profissionais.map(row => ({
+        id: row.id,
+        nome: row.nome,
+        profissao: row.profissao || '',
+        documento: row.documento || '',
+        telefone: row.telefone || '',
+        email: row.email || '',
+        endereco: row.endereco || '',
+        observacoes: row.observacoes || '',
+        treinamentos: (row.profissional_treinamentos || []).map(t => ({ nome: t.nome, tipo: t.tipo, data: t.data_treinamento, observacoes: t.observacoes }))
+      }));
+      state.notifications = data.notifications.map(row => ({
+        id: row.id,
+        tag: row.tag,
+        description: row.description,
+        time: new Date(row.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+        unread: row.unread,
+        targetPage: row.target_page,
+        targetSelector: row.target_selector
+      }));
+      data.cnd.forEach(row => {
+        if (row.ano === state.cnd.ano) state.cnd.meses[row.mes] = Number(row.valor_pago || 0);
+      });
+      document.getElementById('clientes-count').textContent = state.clientes.length;
+      document.getElementById('obras-count').textContent = state.obras.length;
+      updateEpiRegistradosCount();
+      renderClientesList();
+      renderObrasDoCliente();
+      updateObraOptions();
+      updateClienteCards();
+      renderEstoque();
+      renderNotifications();
+      renderEquipamentos();
+      dashboardDataLoaded = true;
     }
 
     // ========== FUNÇÕES DE RENDERIZAÇÃO EXISTENTES (mantidas) ==========
@@ -2190,6 +2526,28 @@
     }
 
     // ========== NOVAS FUNÇÕES: Pagamento de Obras ==========
+    async function persistObraPagamento(obra) {
+      if (!currentProfile || !obra.id || !obra.pagamento) return true;
+      try {
+        await window.BelfortSupabase.upsertObraPagamento(currentProfile, obra, obra.pagamento);
+        return true;
+      } catch (error) {
+        showToast(error.message || 'Erro ao salvar pagamento da obra no banco.', 'error');
+        return false;
+      }
+    }
+
+    async function persistClienteArt(cliente) {
+      if (!currentProfile || !cliente.id || !cliente.art) return true;
+      try {
+        await window.BelfortSupabase.upsertClienteArt(currentProfile, cliente, cliente.art);
+        return true;
+      } catch (error) {
+        showToast(error.message || 'Erro ao salvar ART no banco.', 'error');
+        return false;
+      }
+    }
+
     function renderPagamentoObrasList() {
       const container = document.getElementById('pagamento-obras-list');
       if (!state.obras.length) { container.innerHTML = '<p class="stat-sub">Nenhuma obra cadastrada.</p>'; updatePagamentoObrasStats(); return; }
@@ -2275,7 +2633,7 @@
       state.obras[obraIdx].pagamento.tipo = tipo;
     }
 
-    function confirmarPagamentoVista(obraIdx) {
+    async function confirmarPagamentoVista(obraIdx) {
       const valor = document.getElementById('pag-vista-valor-' + obraIdx).value.trim();
       const data = document.getElementById('pag-vista-data-' + obraIdx).value;
       if (!valor) return showToast('Informe o valor pago.', 'error');
@@ -2284,12 +2642,13 @@
       state.obras[obraIdx].pagamento.tipo = 'vista';
       state.obras[obraIdx].pagamento.valorPago = valor;
       state.obras[obraIdx].pagamento.dataPagamento = data;
+      if (!(await persistObraPagamento(state.obras[obraIdx]))) return;
       renderPagamentoObrasList();
       showToast('Pagamento à vista confirmado!', 'success');
       addNotification('Obra', `Pagamento à vista confirmado para ${state.obras[obraIdx].descricao}`, 'pagamento-obras');
     }
 
-    function gerarParcelasObra(obraIdx) {
+    async function gerarParcelasObra(obraIdx) {
       const entrada = document.getElementById('pag-entrada-' + obraIdx).value.trim();
       const valorParcela = document.getElementById('pag-parcela-valor-' + obraIdx).value.trim();
       const qtd = parseInt(document.getElementById('pag-parcelas-qtd-' + obraIdx).value);
@@ -2302,6 +2661,7 @@
       obra.pagamento.valorParcela = valorParcela;
       obra.pagamento.quantidadeParcelas = qtd;
       obra.pagamento.parcelas = parcelas;
+      if (!(await persistObraPagamento(obra))) return;
       renderPagamentoObrasList();
       showToast('Parcelas geradas com sucesso!', 'success');
     }
@@ -2394,7 +2754,7 @@
       state.clientes[clienteIdx].art.pagamento.tipo = tipo;
     }
 
-    function confirmarArtVista(clienteIdx) {
+    async function confirmarArtVista(clienteIdx) {
       const valorAcordado = document.getElementById('art-valor-' + clienteIdx).value.trim();
       const valorPago = document.getElementById('art-vista-valor-' + clienteIdx).value.trim();
       const data = document.getElementById('art-vista-data-' + clienteIdx).value;
@@ -2403,11 +2763,12 @@
       state.clientes[clienteIdx].art = state.clientes[clienteIdx].art || {};
       state.clientes[clienteIdx].art.valorAcordado = valorAcordado;
       state.clientes[clienteIdx].art.pagamento = { tipo: 'vista', valorPago, dataPagamento: data };
+      if (!(await persistClienteArt(state.clientes[clienteIdx]))) return;
       renderClientesLista();
       showToast('Pagamento de ART à vista confirmado!', 'success');
     }
 
-    function gerarParcelasArt(clienteIdx) {
+    async function gerarParcelasArt(clienteIdx) {
       const valorAcordado = document.getElementById('art-valor-' + clienteIdx).value.trim();
       const entrada = document.getElementById('art-entrada-' + clienteIdx).value.trim();
       const valorParcela = document.getElementById('art-parcela-valor-' + clienteIdx).value.trim();
@@ -2417,6 +2778,7 @@
       const parcelas = gerarParcelamento(valorAcordado || 'R$ 0,00', entrada, valorParcela, qtd);
       state.clientes[clienteIdx].art.valorAcordado = valorAcordado;
       state.clientes[clienteIdx].art.pagamento = { tipo: 'parcelado', entrada, valorParcela, quantidadeParcelas: qtd, parcelas };
+      if (!(await persistClienteArt(state.clientes[clienteIdx]))) return;
       renderClientesLista();
       showToast('Parcelas de ART geradas com sucesso!', 'success');
     }
@@ -2463,7 +2825,7 @@
     }
 
     // ========== NOVAS FUNÇÕES: Cadastro e Lista de Profissionais ==========
-    function saveProfissional() {
+    async function saveProfissional() {
       const nome = document.getElementById('prof-nome').value.trim();
       const profissao = document.getElementById('prof-profissao').value.trim();
       if (!nome || !profissao) return showToast('Nome e Profissão são obrigatórios.', 'error');
@@ -2485,6 +2847,14 @@
         treinamentos: []
       };
       state.profissionais.push(prof);
+      if (currentProfile) {
+        try {
+          const saved = await window.BelfortSupabase.insertProfissional(currentProfile, prof);
+          prof.id = saved.id;
+        } catch (error) {
+          return showToast(error.message || 'Erro ao salvar profissional no banco.', 'error');
+        }
+      }
       ['prof-nome', 'prof-profissao', 'prof-telefone', 'prof-email', 'prof-documento', 'prof-cep', 'prof-logradouro', 'prof-numero', 'prof-complemento', 'prof-bairro', 'prof-cidade', 'prof-uf', 'prof-observacoes'].forEach(id => {
         document.getElementById(id).value = '';
       });
@@ -2566,14 +2936,24 @@
       el.style.display = el.style.display === 'none' ? 'block' : 'none';
     }
 
-    function atribuirTreinamento(idx) {
+    async function atribuirTreinamento(idx) {
       const nome = document.getElementById('treinamento-nome-' + idx).value.trim();
       const tipo = document.getElementById('treinamento-tipo-' + idx).value;
       const data = document.getElementById('treinamento-data-' + idx).value;
       const obs = document.getElementById('treinamento-obs-' + idx).value.trim();
       if (!nome) return showToast('Informe o nome do treinamento.', 'error');
       if (!state.profissionais[idx].treinamentos) state.profissionais[idx].treinamentos = [];
-      state.profissionais[idx].treinamentos.push({ nome, tipo, data, observacoes: obs });
+      const treinamento = { nome, tipo, data, observacoes: obs };
+      state.profissionais[idx].treinamentos.push(treinamento);
+      if (currentProfile) {
+        try {
+          const saved = await window.BelfortSupabase.insertTreinamento(currentProfile, state.profissionais[idx], treinamento);
+          state.profissionais[idx].id = state.profissionais[idx].id || saved.profissional_id;
+        } catch (error) {
+          state.profissionais[idx].treinamentos.pop();
+          return showToast(error.message || 'Erro ao salvar treinamento no banco.', 'error');
+        }
+      }
       renderProfissionaisList();
       showToast('Treinamento atribuído com sucesso!', 'success');
     }
@@ -2604,10 +2984,20 @@
       updateCndTotal();
     }
 
-    function updateCndMonth(month, value) {
+    async function updateCndMonth(month, value) {
       const parseValor = (v) => parseFloat((v || '0').replace(/[^\d,]/g, '').replace(',', '.')) || 0;
-      state.cnd.meses[month] = parseValor(value);
-      saveCndToLocalStorage();
+      const previousValue = state.cnd.meses[month];
+      const nextValue = parseValor(value);
+      state.cnd.meses[month] = nextValue;
+      if (currentProfile) {
+        try {
+          await window.BelfortSupabase.upsertCnd(currentProfile, state.cnd.ano, month, nextValue);
+        } catch (error) {
+          state.cnd.meses[month] = previousValue;
+          renderCndTable();
+          return showToast(error.message || 'Erro ao salvar CND no banco.', 'error');
+        }
+      }
       updateCndTotal();
       const row = document.querySelector(`.cnd-input[data-month="${month}"]`).closest('.cnd-row');
       const statusEl = row.querySelector('.cnd-status');
@@ -2625,11 +3015,11 @@
       document.getElementById('cnd-total').textContent = `Total Pago em ${state.cnd.ano}: R$ ${total.toFixed(2).replace('.', ',')}`;
     }
 
-    function saveCndToLocalStorage() {
-      localStorage.setItem('cnd', JSON.stringify(state.cnd));
+    // ========== NOVAS FUNÇÕES: Equipamentos ==========
+    async function persistEquipmentStock(eq) {
+      return persistEquipamento(eq);
     }
 
-    // ========== NOVAS FUNÇÕES: Equipamentos ==========
     function renderEquipamentos() {
       const container = document.getElementById('equipamentos-lista');
       if (!state.equipamentos.length) { container.innerHTML = '<p class="stat-sub">Nenhum equipamento cadastrado.</p>'; updateEquipStats(); return; }
@@ -2657,25 +3047,47 @@
       updateEquipStats();
     }
 
-    function updateEquipField(idx, field, delta) {
+    function clampEquipamentoItem(eq) {
+      eq.total = Math.max(0, parseInt(eq.total, 10) || 0);
+      eq.emUso = Math.max(0, parseInt(eq.emUso, 10) || 0);
+      if (eq.emUso > eq.total) eq.emUso = eq.total;
+    }
+
+    async function updateEquipField(idx, field, delta) {
       const eq = state.equipamentos[idx];
+      const previous = { total: eq.total, emUso: eq.emUso };
       eq[field] = Math.max(0, eq[field] + delta);
-      if (field === 'total' && eq.total < eq.emUso) eq.emUso = eq.total;
-      if (field === 'emUso' && eq.emUso > eq.total) eq.emUso = eq.total;
+      clampEquipamentoItem(eq);
+      if (!(await persistEquipmentStock(eq))) {
+        eq.total = previous.total;
+        eq.emUso = previous.emUso;
+      }
       renderEquipamentos();
     }
 
-    function setEquipField(idx, field, value) {
+    async function setEquipField(idx, field, value) {
       const eq = state.equipamentos[idx];
-      eq[field] = Math.max(0, parseInt(value) || 0);
-      if (field === 'total' && eq.total < eq.emUso) eq.emUso = eq.total;
-      if (field === 'emUso' && eq.emUso > eq.total) eq.emUso = eq.total;
+      const previous = { total: eq.total, emUso: eq.emUso };
+      eq[field] = Math.max(0, parseInt(value, 10) || 0);
+      clampEquipamentoItem(eq);
+      if (!(await persistEquipmentStock(eq))) {
+        eq.total = previous.total;
+        eq.emUso = previous.emUso;
+      }
       renderEquipamentos();
     }
 
-    function removeEquipamento(idx) {
-      const nome = state.equipamentos[idx].nome;
+    async function removeEquipamento(idx) {
+      const item = state.equipamentos[idx];
+      const nome = item.nome;
       if (!confirm(`Excluir "${nome}" do estoque?`)) return;
+      if (item.id && currentProfile) {
+        try {
+          await window.BelfortSupabase.removeEquipamento(currentProfile, item);
+        } catch (error) {
+          return showToast(error.message || 'Erro ao remover equipamento no banco.', 'error');
+        }
+      }
       state.equipamentos.splice(idx, 1);
       renderEquipamentos();
       showToast(`"${nome}" removido.`, 'success');
@@ -2691,11 +3103,13 @@
       document.getElementById('equip-modal').classList.remove('open');
     }
 
-    function confirmAddEquip() {
+    async function confirmAddEquip() {
       const v = normalizeEpiName(document.getElementById('new-equip-input').value);
       if (!v) return showToast('Informe o nome do equipamento.', 'error');
       if (state.equipamentos.find(e => e.nome.toLowerCase() === v.toLowerCase())) return showToast('Equipamento já cadastrado.', 'error');
-      state.equipamentos.push({ nome: v, total: 0, emUso: 0 });
+      const item = { nome: v, total: 0, emUso: 0 };
+      if (!(await persistEquipamento(item))) return;
+      state.equipamentos.push(item);
       renderEquipamentos();
       closeEquipModal();
       showToast('"' + v + '" adicionado com sucesso!', 'success');
@@ -2755,6 +3169,54 @@
       if (id === 'equipamentos') renderEquipamentos();
     };
 
+    // ========== AUTENTICAÇÃO SUPABASE ==========
+    document.querySelectorAll('[data-auth-mode]').forEach(button => {
+      button.addEventListener('click', () => showAuthPanel(button.dataset.authMode));
+    });
+
+    document.getElementById('auth-register-panel').addEventListener('submit', async event => {
+      event.preventDefault();
+      const fullName = document.getElementById('auth-register-name').value.trim();
+      const email = document.getElementById('auth-register-email').value.trim();
+      const recoveryPassword = document.getElementById('auth-register-password').value;
+      const securityCode = window.BelfortAuthUtils.generateSecurityCode();
+      if (!fullName || !email || recoveryPassword.length < 6) {
+        setAuthMessage('Preencha nome, email e senha com pelo menos 6 caracteres.', 'error');
+        return;
+      }
+      try {
+        setAuthMessage('Criando usuário...', '');
+        const data = await window.BelfortSupabase.signUpWithSecurityCode({ fullName, email, recoveryPassword, securityCode });
+        document.getElementById('auth-generated-code').textContent = securityCode;
+        showAuthPanel('code');
+        if (!data.session) setAuthMessage('Código gerado. Se o Supabase pedir confirmação, confirme seu email antes de entrar.', 'success');
+      } catch (error) {
+        setAuthMessage(error.message || 'Erro ao cadastrar usuário.', 'error');
+      }
+    });
+
+    document.getElementById('auth-login-panel').addEventListener('submit', async event => {
+      event.preventDefault();
+      const email = document.getElementById('auth-login-email').value.trim();
+      const securityCode = document.getElementById('auth-login-code').value.trim();
+      try {
+        setAuthMessage('Entrando...', '');
+        await window.BelfortSupabase.signInWithSecurityCode({ email, securityCode });
+        currentProfile = await window.BelfortSupabase.getProfile();
+        await window.BelfortSupabase.saveSecurityCodeForCurrentUser(securityCode);
+        await loadDataFromSupabase();
+        showDashboard();
+      } catch (error) {
+        setAuthMessage('Usuário ou código de segurança inválido.', 'error');
+      }
+    });
+
+    document.getElementById('auth-copy-code').addEventListener('click', async () => {
+      const code = document.getElementById('auth-generated-code').textContent.trim();
+      await navigator.clipboard.writeText(code);
+      setAuthMessage('Código copiado.', 'success');
+    });
+
     // ========== EVENT LISTENERS PARA NOVAS ABAS ==========
     document.getElementById('btn-save-profissional').addEventListener('click', saveProfissional);
     document.getElementById('btn-reset-profissional').addEventListener('click', resetProfissionalForm);
@@ -2771,204 +3233,19 @@
     document.getElementById('new-equip-input').addEventListener('keydown', e => { if (e.key === 'Enter') confirmAddEquip(); });
 
     // ========== INICIALIZAÇÃO ==========
+    renderNotifications();
+    renderEstoque();
+    updateEpiRegistradosCount();
+    setupCustomDocumentSelect();
+    applyDocType('CPF');
+    updateClienteCards();
+    renderClientesList();
+    renderObrasDoCliente();
+    updateObraOptions();
     updateProfCount();
     updateEquipStats();
+    bootAuth();
 
-  </script>
-
-  <script>
-    // ========== INTEGRAÇÃO SUPABASE ==========
-    // Projeto: Site Belfort Engenharia
-    // Project ref: anenzougmpqekaagmpxi
-    // URL calculada pelo ref informado.
-    // IMPORTANTE: cole abaixo a ANON PUBLIC KEY do Supabase em Project Settings > API.
-    // Nunca coloque service_role key no front-end.
-    const BELFORT_SUPABASE_URL = 'https://anenzougmpqekaagmpxi.supabase.co';
-    const BELFORT_SUPABASE_ANON_KEY = 'sb_publishable_4LC3TYv95xUuMVR9aR5B-A_rW4ZZjSA';
-    const BELFORT_STATE_ID = 'main';
-    const BELFORT_BUCKET = 'belfort-anexos';
-
-    const supabaseConfigured =
-      typeof window.supabase !== 'undefined' &&
-      BELFORT_SUPABASE_ANON_KEY &&
-      !BELFORT_SUPABASE_ANON_KEY.includes('COLE_AQUI');
-
-    const belfortDb = supabaseConfigured
-      ? window.supabase.createClient(BELFORT_SUPABASE_URL, BELFORT_SUPABASE_ANON_KEY)
-      : null;
-
-    function isSupabaseReady(showMessage = false) {
-      if (belfortDb) return true;
-      if (showMessage && typeof showToast === 'function') {
-        showToast('Supabase ainda não configurado: cole a anon public key no index.html.', 'error');
-      }
-      return false;
-    }
-
-    function sanitizeStateForDatabase(value) {
-      return JSON.parse(JSON.stringify(value, (key, val) => {
-        if (val instanceof File) return undefined;
-        if (val instanceof HTMLElement) return undefined;
-        if (typeof val === 'function') return undefined;
-        return val;
-      }));
-    }
-
-    function hydrateStateFromDatabase(saved) {
-      if (!saved || typeof saved !== 'object') return;
-      const protectedKeys = ['sidebarCollapsed'];
-      Object.keys(saved).forEach(key => {
-        if (protectedKeys.includes(key)) return;
-        state[key] = saved[key];
-      });
-    }
-
-    function rerenderEverythingAfterDatabaseLoad() {
-      try {
-        updateEpiRegistradosCount();
-        updateClienteCards();
-        updateObraOptions();
-        renderClientesList();
-        renderObrasDoCliente();
-        renderNotifications();
-        renderEstoque();
-        updatePagamentoObrasStats();
-        updateClientesListaStats();
-        updateProfCount();
-        updateProfListaStats();
-        updateEquipStats();
-        if (document.getElementById('clientes-count')) document.getElementById('clientes-count').textContent = state.clientes.length;
-        if (document.getElementById('obras-count')) document.getElementById('obras-count').textContent = state.obras.length;
-        const activePage = document.querySelector('.page.active');
-        if (activePage && activePage.id) {
-          const pageId = activePage.id.replace('page-', '');
-          if (pageId === 'pagamento-obras') renderPagamentoObrasList();
-          if (pageId === 'clientes-lista') renderClientesLista();
-          if (pageId === 'profissionais-lista') renderProfissionaisList();
-          if (pageId === 'documentos-gerais') renderCndTable();
-          if (pageId === 'equipamentos') renderEquipamentos();
-        }
-      } catch (err) {
-        console.error('Erro ao atualizar tela após carregar Supabase:', err);
-      }
-    }
-
-    async function loadBelfortStateFromSupabase() {
-      if (!isSupabaseReady(false)) {
-        console.warn('Supabase não iniciado. Cole a anon public key em BELFORT_SUPABASE_ANON_KEY.');
-        return;
-      }
-      const { data, error } = await belfortDb
-        .from('belfort_app_state')
-        .select('data')
-        .eq('id', BELFORT_STATE_ID)
-        .maybeSingle();
-
-      if (error) {
-        console.error('Erro ao carregar estado do Supabase:', error);
-        showToast('Não foi possível carregar dados do Supabase.', 'error');
-        return;
-      }
-
-      if (data && data.data) {
-        hydrateStateFromDatabase(data.data);
-        rerenderEverythingAfterDatabaseLoad();
-        showToast('Dados carregados do Supabase.', 'success');
-      } else {
-        await saveBelfortStateToSupabase(false);
-      }
-    }
-
-    let supabaseSaveTimer;
-    async function saveBelfortStateToSupabase(showSuccess = false) {
-      if (!isSupabaseReady(false)) return;
-      const payload = sanitizeStateForDatabase(state);
-      const { error } = await belfortDb
-        .from('belfort_app_state')
-        .upsert({ id: BELFORT_STATE_ID, data: payload, updated_at: new Date().toISOString() }, { onConflict: 'id' });
-
-      if (error) {
-        console.error('Erro ao salvar no Supabase:', error);
-        if (showSuccess) showToast('Erro ao salvar no Supabase.', 'error');
-        return;
-      }
-      if (showSuccess) showToast('Dados salvos no Supabase.', 'success');
-    }
-
-    function scheduleSupabaseSave() {
-      if (!isSupabaseReady(false)) return;
-      clearTimeout(supabaseSaveTimer);
-      supabaseSaveTimer = setTimeout(() => saveBelfortStateToSupabase(false), 600);
-    }
-
-    async function uploadBelfortAttachment(context, ownerIdx, itemIdx, file) {
-      if (!isSupabaseReady(true)) return null;
-      const safeName = file.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9._-]+/g, '-');
-      const path = `${context}/${ownerIdx}/${itemIdx}/${Date.now()}-${safeName}`;
-      const { error: uploadError } = await belfortDb.storage
-        .from(BELFORT_BUCKET)
-        .upload(path, file, { upsert: false, contentType: file.type || 'application/octet-stream' });
-
-      if (uploadError) {
-        console.error('Erro ao enviar anexo:', uploadError);
-        showToast('Erro ao enviar anexo para o Supabase Storage.', 'error');
-        return null;
-      }
-
-      const { data: publicUrlData } = belfortDb.storage.from(BELFORT_BUCKET).getPublicUrl(path);
-      const meta = {
-        context,
-        owner_idx: String(ownerIdx),
-        item_idx: String(itemIdx),
-        file_name: file.name,
-        file_path: path,
-        file_url: publicUrlData && publicUrlData.publicUrl ? publicUrlData.publicUrl : null,
-        mime_type: file.type || null,
-        size_bytes: file.size || null,
-        created_at: new Date().toISOString()
-      };
-
-      const { error: metaError } = await belfortDb.from('belfort_anexos').insert(meta);
-      if (metaError) console.error('Erro ao salvar metadados do anexo:', metaError);
-      return meta;
-    }
-
-    const originalHandlePaymentAttachment = window.handlePaymentAttachment;
-    window.handlePaymentAttachment = async function (context, ownerIdx, itemIdx, input) {
-      const file = input.files && input.files[0];
-      if (!file) return;
-
-      if (typeof originalHandlePaymentAttachment === 'function') {
-        originalHandlePaymentAttachment(context, ownerIdx, itemIdx, input);
-      }
-
-      const uploaded = await uploadBelfortAttachment(context, ownerIdx, itemIdx, file);
-      if (uploaded) {
-        const bucket = getAttachmentBucket(context, ownerIdx);
-        bucket[itemIdx] = uploaded.file_name;
-        bucket[itemIdx + '_path'] = uploaded.file_path;
-        bucket[itemIdx + '_url'] = uploaded.file_url;
-        const display = document.getElementById(`attach-name-${context}-${ownerIdx}-${itemIdx}`);
-        if (display) display.textContent = uploaded.file_name;
-        await saveBelfortStateToSupabase(false);
-        showToast('Anexo enviado e salvo no Supabase.', 'success');
-      }
-    };
-
-    document.addEventListener('click', event => {
-      const shouldSave = event.target.closest('button, .epi-item, .doc-check, .pay-type-btn, .estoque-step-btn, .estoque-remove-btn, .file-del');
-      if (shouldSave) scheduleSupabaseSave();
-    });
-
-    document.addEventListener('change', event => {
-      if (event.target.matches('input, select, textarea')) scheduleSupabaseSave();
-    });
-
-    window.addEventListener('beforeunload', () => {
-      if (belfortDb) saveBelfortStateToSupabase(false);
-    });
-
-    loadBelfortStateFromSupabase();
   </script>
 
 </body>

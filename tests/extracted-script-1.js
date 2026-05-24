@@ -1,0 +1,2022 @@
+
+    let currentProfile = null;
+    let dashboardDataLoaded = false;
+
+    function setAuthMessage(message, type = '') {
+      const el = document.getElementById('auth-message');
+      el.textContent = message || '';
+      el.className = 'auth-message' + (type ? ' ' + type : '');
+    }
+
+    function showAuthPanel(mode) {
+      document.querySelectorAll('.auth-panel').forEach(panel => panel.classList.remove('active'));
+      document.getElementById('auth-' + mode + '-panel').classList.add('active');
+      setAuthMessage('');
+    }
+
+    function showDashboard() {
+      document.getElementById('auth-shell').classList.add('hidden');
+    }
+
+    function showAuth() {
+      document.getElementById('auth-shell').classList.remove('hidden');
+    }
+
+    async function bootAuth() {
+      try {
+        const session = await window.BelfortSupabase.getSession();
+        if (!session) {
+          showAuth();
+          showAuthPanel('login');
+          return;
+        }
+        currentProfile = await window.BelfortSupabase.getProfile();
+        await loadDataFromSupabase();
+        showDashboard();
+      } catch (error) {
+        showAuth();
+        showAuthPanel('login');
+        setAuthMessage(error.message || 'Não foi possível validar sua sessão.', 'error');
+      }
+    }
+
+    function showPage(id) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+      document.getElementById('page-' + id).classList.add('active');
+      document.querySelector('[data-page="' + id + '"]').classList.add('active');
+      document.getElementById('tb-current').textContent = pages[id];
+      if (id === 'pagamento-obras') { renderPagamentoObrasList(); updatePagamentoObrasStats(); }
+      if (id === 'clientes-lista') { renderClientesLista(); updateClientesListaStats(); }
+      if (id === 'cadastro-profissionais') { resetProfissionalForm(); }
+      if (id === 'profissionais-lista') { renderProfissionaisList(); updateProfListaStats(); }
+      if (id === 'documentos-gerais') { renderCndTable(); }
+      if (id === 'equipamentos') { renderEquipamentos(); updateEquipStats(); }
+    }
+
+    function toggleTheme() {
+      const isLight = document.body.classList.toggle('light-theme');
+      localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    }
+
+    function toggleSidebar() {
+      state.sidebarCollapsed = !state.sidebarCollapsed;
+      document.querySelector('.app').classList.toggle('sidebar-collapsed', state.sidebarCollapsed);
+    }
+
+    if (localStorage.getItem('theme') === 'light') {
+      document.body.classList.add('light-theme');
+    }
+
+    document.getElementById('theme-toggle-btn').addEventListener('click', toggleTheme);
+    document.getElementById('tb-collapse-btn').addEventListener('click', toggleSidebar);
+
+    document.querySelectorAll('.sb-item, [data-page]').forEach(el => {
+      el.addEventListener('click', function () {
+        const pg = this.getAttribute('data-page');
+        if (pg) showPage(pg);
+      });
+    });
+
+    function clearFieldErrors(inputs) {
+      inputs.forEach(input => {
+        const field = input.closest('.field');
+        if (field) field.classList.remove('field-error');
+      });
+    }
+
+    function validateRequiredFields(inputs) {
+      let valid = true;
+      clearFieldErrors(inputs);
+      inputs.forEach(input => {
+        const value = input.value.trim();
+        if (!value) {
+          valid = false;
+          const field = input.closest('.field');
+          if (field) field.classList.add('field-error');
+        }
+      });
+      return valid;
+    }
+
+    document.querySelectorAll('.field-input').forEach(input => {
+      input.addEventListener('input', () => {
+        if (input.value.trim()) {
+          const field = input.closest('.field');
+          if (field) field.classList.remove('field-error');
+        }
+      });
+    });
+
+    function getTrashIconMarkup() {
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>';
+    }
+
+    async function removeEpiByName(name) {
+      const item = state.estoqueEpis.find(epi => epi.nome.toLowerCase() === name.toLowerCase());
+      if (item && item.id && currentProfile) {
+        try {
+          await window.BelfortSupabase.removeEpiItem(currentProfile, item);
+        } catch (error) {
+          return showToast(error.message || 'Erro ao remover EPI no banco.', 'error');
+        }
+      }
+      state.estoqueEpis = state.estoqueEpis.filter(epi => epi.nome.toLowerCase() !== name.toLowerCase());
+      document.querySelectorAll('.epi-item').forEach(item => {
+        if ((item.dataset.name || '').toLowerCase() === name.toLowerCase()) {
+          item.remove();
+        }
+      });
+      updateEpiRegistradosCount();
+      renderEstoque();
+      showToast(`"${name}" removido da lista de EPIs.`, 'success');
+    }
+
+    function decorateEpiItem(item) {
+      if (!item || item.dataset.decorated === 'true') return;
+      item.dataset.decorated = 'true';
+
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'epi-remove-btn';
+      removeBtn.type = 'button';
+      removeBtn.title = 'Excluir EPI';
+      removeBtn.setAttribute('aria-label', `Excluir ${item.dataset.name || 'EPI'}`);
+      removeBtn.innerHTML = getTrashIconMarkup();
+      removeBtn.addEventListener('click', event => {
+        event.stopPropagation();
+        const epiName = item.dataset.name || item.querySelector('span')?.textContent || 'EPI';
+        removeEpiByName(epiName);
+      });
+      item.appendChild(removeBtn);
+    }
+
+    document.querySelectorAll('.epi-item').forEach(decorateEpiItem);
+    const baseEpiList = Array.from(document.querySelectorAll('.epi-item'))
+      .map(item => (item.dataset.name || '').trim())
+      .filter(Boolean);
+
+    function updateEpiRegistradosCount() {
+      document.getElementById('epi-cadastrados-count').textContent =
+        document.querySelectorAll('.epi-item').length;
+    }
+
+    document.getElementById('add-epi-btn').addEventListener('click', () => {
+      document.getElementById('new-epi-input').value = '';
+      document.getElementById('epi-modal').classList.add('open');
+      setTimeout(() => document.getElementById('new-epi-input').focus(), 200);
+    });
+
+    document.getElementById('btn-save-epi').addEventListener('click', () => {
+      const totalEpis = document.querySelectorAll('.epi-item').length;
+      addNotification('EPI', `Lista de EPIs atualizada com ${totalEpis} item(ns).`, 'epi', '#epi-grid');
+      showToast('Lista de EPIs atualizada com sucesso!', 'success');
+    });
+
+    function closeModal() {
+      document.getElementById('epi-modal').classList.remove('open');
+    }
+
+    async function confirmAddEpi() {
+      const v = normalizeEpiName(document.getElementById('new-epi-input').value);
+      if (!v) return;
+      const grid = document.getElementById('epi-grid');
+      const div = document.createElement('div');
+      div.className = 'epi-item';
+      div.dataset.name = v;
+      div.innerHTML = '<div class="epi-cb"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>' + v + '</span>';
+      decorateEpiItem(div);
+      grid.appendChild(div);
+      updateEpiRegistradosCount();
+      if (!state.estoqueEpis.find(item => item.nome.toLowerCase() === v.toLowerCase())) {
+        const item = { nome: v, total: 0, emUso: 0 };
+        if (!(await persistEpiItem(item))) return;
+        state.estoqueEpis.push(item);
+        renderEstoque();
+      }
+      closeModal();
+      showToast('"' + v + '" adicionado com sucesso!', 'success');
+    }
+
+    document.getElementById('epi-modal').addEventListener('click', function (e) {
+      if (e.target === this) closeModal();
+    });
+
+    document.getElementById('new-epi-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') confirmAddEpi();
+    });
+
+    function normalizeEpiName(value) {
+      const normalized = (value || '').trim().toLowerCase();
+      if (!normalized) return '';
+      return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+    }
+
+    async function persistEpiItem(item) {
+      if (!currentProfile) return true;
+      try {
+        const saved = await window.BelfortSupabase.saveEpiItem(currentProfile, item);
+        item.id = saved.id;
+        return true;
+      } catch (error) {
+        showToast(error.message || 'Erro ao salvar EPI no banco.', 'error');
+        return false;
+      }
+    }
+
+    async function persistEquipamento(item) {
+      if (!currentProfile) return true;
+      try {
+        const saved = await window.BelfortSupabase.saveEquipamento(currentProfile, item);
+        item.id = saved.id;
+        return true;
+      } catch (error) {
+        showToast(error.message || 'Erro ao salvar equipamento no banco.', 'error');
+        return false;
+      }
+    }
+
+    function applyRealtimeCapitalization(inputElement) {
+      if (!inputElement) return;
+      inputElement.addEventListener('input', () => {
+        const cursorPosition = inputElement.selectionStart;
+        const normalizedValue = normalizeEpiName(inputElement.value);
+        if (inputElement.value !== normalizedValue) {
+          inputElement.value = normalizedValue;
+          if (typeof cursorPosition === 'number') {
+            inputElement.setSelectionRange(cursorPosition, cursorPosition);
+          }
+        }
+      });
+    }
+
+    const newEpiInput = document.getElementById('new-epi-input');
+    applyRealtimeCapitalization(newEpiInput);
+
+    document.getElementById('btn-reset-epi-form').addEventListener('click', async () => {
+      newEpiInput.value = '';
+      clearFieldErrors([newEpiInput]);
+
+      const grid = document.getElementById('epi-grid');
+      const currentEpis = Array.from(grid.querySelectorAll('.epi-item'))
+        .map(item => (item.dataset.name || item.querySelector('span')?.textContent || '').trim())
+        .filter(Boolean);
+
+      const mergedEpis = [...baseEpiList];
+      currentEpis.forEach(name => {
+        if (!mergedEpis.some(baseName => baseName.toLowerCase() === name.toLowerCase())) {
+          mergedEpis.push(name);
+        }
+      });
+
+      grid.innerHTML = '';
+      mergedEpis.forEach(name => {
+        const div = document.createElement('div');
+        div.className = 'epi-item';
+        div.dataset.name = name;
+        div.innerHTML = '<div class="epi-cb"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>' + name + '</span>';
+        decorateEpiItem(div);
+        grid.appendChild(div);
+      });
+
+      for (const name of mergedEpis) {
+        if (!state.estoqueEpis.some(item => item.nome.toLowerCase() === name.toLowerCase())) {
+          const item = { nome: name, total: 0, emUso: 0 };
+          if (await persistEpiItem(item)) {
+            state.estoqueEpis.push(item);
+          }
+        }
+      }
+
+      updateEpiRegistradosCount();
+      renderEstoque();
+      showToast('Lista base de EPIs restaurada com sucesso.', 'success');
+    });
+
+    const defaultDocumentStatuses = Array.from(document.querySelectorAll('.doc-check')).map(item => ({
+      nome: item.querySelector('.doc-check-title')?.textContent.trim() || 'Documento',
+      checked: false
+    }));
+
+    function applyDocumentChecklist(documentos) {
+      const statusByName = new Map((documentos || []).map(doc => [doc.nome, !!doc.checked]));
+      document.querySelectorAll('.doc-check').forEach(item => {
+        const nome = item.querySelector('.doc-check-title')?.textContent.trim() || 'Documento';
+        item.classList.toggle('checked', statusByName.get(nome) || false);
+      });
+    }
+
+    function toggleDocCheck(el) {
+      el.classList.toggle('checked');
+    }
+    window.toggleDocCheck = toggleDocCheck;
+
+    function collectDocumentChecklist() {
+      return Array.from(document.querySelectorAll('.doc-check')).map(item => ({
+        nome: item.querySelector('.doc-check-title')?.textContent.trim() || 'Documento',
+        checked: item.classList.contains('checked')
+      }));
+    }
+
+    function getSelectedDocumentObra() {
+      const select = document.getElementById('documento-obra');
+      const obraIndex = Number(select.value);
+      if (!Number.isInteger(obraIndex) || obraIndex < 0) return null;
+      return state.obras[obraIndex] || null;
+    }
+
+    function updateDocumentChecklistForSelectedObra() {
+      const obra = getSelectedDocumentObra();
+      applyDocumentChecklist(obra?.documentos || defaultDocumentStatuses);
+    }
+
+    document.getElementById('documento-obra').addEventListener('change', updateDocumentChecklistForSelectedObra);
+
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('file-input');
+
+    dropzone.querySelector('.dz-btn').addEventListener('click', e => {
+      e.stopPropagation();
+      fileInput.click();
+    });
+
+    dropzone.addEventListener('click', () => fileInput.click());
+
+    dropzone.addEventListener('dragover', e => {
+      e.preventDefault();
+      dropzone.classList.add('drag-over');
+    });
+
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
+
+    dropzone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropzone.classList.remove('drag-over');
+      addFiles(e.dataTransfer.files);
+    });
+
+    fileInput.addEventListener('change', () => addFiles(fileInput.files));
+
+    async function addFiles(files) {
+      const fileArray = Array.from(files);
+      if (!fileArray.length) return;
+      if (currentProfile) {
+        try {
+          await window.BelfortSupabase.insertDocumentoAnexos(currentProfile, fileArray);
+        } catch (error) {
+          return showToast(error.message || 'Erro ao salvar anexos no banco.', 'error');
+        }
+      }
+      const list = document.getElementById('files-list');
+      fileArray.forEach(f => {
+        const ext = f.name.split('.').pop().toUpperCase();
+        const size = f.size > 1048576 ? (f.size / 1048576).toFixed(1) + ' MB' : Math.round(f.size / 1024) + ' KB';
+        const item = document.createElement('div');
+        item.className = 'file-item';
+        item.innerHTML = '<div class="file-ext">' + ext + '</div><div class="file-info"><span class="file-name">' + f.name + '</span><span class="file-size">' + size + '</span></div><button class="file-del" onclick="this.parentElement.remove()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
+        list.appendChild(item);
+      });
+      showToast('Anexo salvo no banco.', 'success');
+    }
+
+    function renderClientesList() {
+      const list = document.getElementById('clientes-list');
+      if (!state.clientes.length) {
+        list.innerHTML = '<p class="stat-sub">Nenhum cliente cadastrado.</p>';
+        return;
+      }
+
+      list.innerHTML = state.clientes.map((cliente, idx) => {
+        const obrasDoCliente = state.obras.filter(obra => obra.clienteIndex === idx);
+        const activeClass = state.selectedClienteIndex === idx ? 'cliente-item-selected' : '';
+        const expandedClass = state.expandedClienteIndex === idx ? 'expanded' : '';
+        return `<div class="accordion-item">
+      <button class="file-item cliente-item ${activeClass}" onclick="toggleClienteDetails(${idx})">
+        <div class="file-info">
+          <span class="file-name">${cliente.nome}</span>
+          <span class="file-size">${cliente.documento} • ${obrasDoCliente.length} obra(s)</span>
+        </div>
+        <span class="accordion-chevron ${expandedClass}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 12 15 18 9"/></svg>
+        </span>
+      </button>
+      <div class="accordion-content ${expandedClass}">
+        <div class="accordion-content-inner">
+          <p><strong>Telefone:</strong> ${cliente.telefone}</p>
+          <p><strong>E-mail:</strong> ${cliente.email}</p>
+          <p><strong>Endereço:</strong> ${cliente.endereco}</p>
+        </div>
+      </div>
+    </div>`;
+      }).join('');
+    }
+
+    function renderObrasDoCliente() {
+      const list = document.getElementById('obras-list');
+      if (!state.obras.length) {
+        list.innerHTML = '<p class="stat-sub">Nenhuma obra cadastrada.</p>';
+        return;
+      }
+      list.innerHTML = state.obras.map((obra, idx) => {
+        const expandedClass = state.expandedObraIndex === idx ? 'expanded' : '';
+        return `<div class="accordion-item">
+      <button class="file-item cliente-item" onclick="toggleObraDetails(${idx})">
+        <div class="file-info">
+          <span class="file-name">${obra.descricao}</span>
+          <span class="file-size">${obra.clienteNome}</span>
+        </div>
+        <span class="accordion-chevron ${expandedClass}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 12 15 18 9"/></svg>
+        </span>
+      </button>
+      <div class="accordion-content ${expandedClass}">
+        <div class="accordion-content-inner">
+          <p><strong>Cliente:</strong> ${obra.clienteNome}</p>
+          <p><strong>Início do Contrato:</strong> ${obra.dataInicio || obra.data || 'Não informado'}</p>
+          <p><strong>Término do Contrato:</strong> ${obra.dataTermino || 'Não informado'}</p>
+          <p><strong>Valor:</strong> ${obra.valor}</p>
+          <p><strong>Endereço:</strong> ${obra.endereco && typeof obra.endereco === 'object' ? obra.endereco.logradouro + ', ' + obra.endereco.numero + (obra.endereco.complemento ? ', ' + obra.endereco.complemento : '') + ' — ' + obra.endereco.bairro + ', ' + obra.endereco.cidade + ' - ' + obra.endereco.uf + ' (' + obra.endereco.cep + ')' : (obra.endereco || 'Não informado')}</p>
+        </div>
+      </div>
+    </div>`;
+      }).join('');
+    }
+
+    function updateObraOptions() {
+      const docObra = document.getElementById('documento-obra');
+      const obraClienteSelect = document.getElementById('obra-cliente-select');
+      docObra.innerHTML = '<option value="">Selecione uma obra...</option>' +
+        state.obras.map((o, i) => `<option value="${i}">${o.descricao} — ${o.clienteNome}</option>`).join('');
+      obraClienteSelect.innerHTML = '<option value="">Selecione um cliente...</option>' +
+        state.clientes.map((cliente, idx) => `<option value="${idx}">${cliente.nome}</option>`).join('');
+    }
+
+    function updateClienteCards() {
+      const name = state.selectedClienteIndex === null
+        ? 'Selecione um cliente para cadastrar uma obra'
+        : `Cliente selecionado: ${state.clientes[state.selectedClienteIndex].nome}`;
+      document.getElementById('obra-cadastro-hint').textContent = name;
+    }
+
+    function selectCliente(index) {
+      state.selectedClienteIndex = index;
+      const obraClienteSelect = document.getElementById('obra-cliente-select');
+      if (obraClienteSelect) obraClienteSelect.value = String(index);
+      renderClientesList();
+      updateClienteCards();
+    }
+    window.selectCliente = selectCliente;
+
+    function toggleClienteDetails(index) {
+      state.expandedClienteIndex = state.expandedClienteIndex === index ? null : index;
+      selectCliente(index);
+    }
+    window.toggleClienteDetails = toggleClienteDetails;
+
+    function toggleObraDetails(index) {
+      state.expandedObraIndex = state.expandedObraIndex === index ? null : index;
+      renderObrasDoCliente();
+    }
+    window.toggleObraDetails = toggleObraDetails;
+
+    const docTypeMasks = {
+      CPF: { maxDigits: 11, placeholder: '000.000.000-00' },
+      CNPJ: { maxDigits: 14, placeholder: '00.000.000/0000-00' }
+    };
+
+    function sanitizeDigits(value) {
+      return value.replace(/\D/g, '');
+    }
+
+    function formatPhone(value) {
+      const digits = sanitizeDigits(value).slice(0, 11);
+      if (!digits) return '';
+      if (digits.length <= 2) return `(${digits}`;
+      if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+      if (digits.length <= 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+      return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+    }
+
+    function formatCep(value) {
+      const digits = sanitizeDigits(value).slice(0, 8);
+      if (digits.length <= 5) return digits;
+      return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+    }
+
+    function formatCurrencyFromDigits(value) {
+      const digits = sanitizeDigits(value);
+      const amount = Number(digits || '0') / 100;
+      return amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function getBrazilHolidays(year) {
+      const fixedHolidays = [
+        `${year}-01-01`,
+        `${year}-04-21`,
+        `${year}-05-01`,
+        `${year}-09-07`,
+        `${year}-10-12`,
+        `${year}-11-02`,
+        `${year}-11-15`,
+        `${year}-11-20`,
+        `${year}-12-25`
+      ];
+
+      const easterDate = getEasterDate(year);
+      const carnivalMonday = addDays(easterDate, -48);
+      const carnivalTuesday = addDays(easterDate, -47);
+      const goodFriday = addDays(easterDate, -2);
+      const corpusChristi = addDays(easterDate, 60);
+
+      return new Set([
+        ...fixedHolidays,
+        formatDateISO(carnivalMonday),
+        formatDateISO(carnivalTuesday),
+        formatDateISO(goodFriday),
+        formatDateISO(corpusChristi)
+      ]);
+    }
+
+    function getEasterDate(year) {
+      const a = year % 19;
+      const b = Math.floor(year / 100);
+      const c = year % 100;
+      const d = Math.floor(b / 4);
+      const e = b % 4;
+      const f = Math.floor((b + 8) / 25);
+      const g = Math.floor((b - f + 1) / 3);
+      const h = (19 * a + b - d - g + 15) % 30;
+      const i = Math.floor(c / 4);
+      const k = c % 4;
+      const l = (32 + 2 * e + 2 * i - h - k) % 7;
+      const m = Math.floor((a + 11 * h + 22 * l) / 451);
+      const month = Math.floor((h + l - 7 * m + 114) / 31);
+      const day = ((h + l - 7 * m + 114) % 31) + 1;
+      return new Date(year, month - 1, day);
+    }
+
+    function addDays(date, days) {
+      const result = new Date(date);
+      result.setDate(result.getDate() + days);
+      return result;
+    }
+
+    function formatDateISO(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function validateBusinessDay(dateValue) {
+      if (!dateValue) return { valid: true, message: '' };
+      const [year, month, day] = dateValue.split('-').map(Number);
+      const date = new Date(year, month - 1, day);
+      const dayOfWeek = date.getDay();
+
+      if (dayOfWeek === 0 || dayOfWeek === 6) {
+        return { valid: false, message: 'A data de entrega não pode ser em final de semana. Escolha um dia útil.' };
+      }
+
+      const holidays = getBrazilHolidays(year);
+      if (holidays.has(dateValue)) {
+        return { valid: false, message: 'A data selecionada é feriado nacional. Escolha um dia útil.' };
+      }
+
+      return { valid: true, message: '' };
+    }
+
+    function updateObraDateFeedback() {
+      const inputInicio = document.getElementById('obra-data-inicio');
+      const inputTermino = document.getElementById('obra-data-termino');
+      const feedbackInicio = document.getElementById('obra-data-inicio-feedback');
+      const feedbackTermino = document.getElementById('obra-data-termino-feedback');
+      const fieldInicio = inputInicio.closest('.field');
+      const fieldTermino = inputTermino.closest('.field');
+      let valid = true;
+
+      // Validar data de início
+      const resultInicio = validateBusinessDay(inputInicio.value);
+      if (!resultInicio.valid) {
+        feedbackInicio.textContent = resultInicio.message;
+        feedbackInicio.style.display = 'block';
+        if (fieldInicio) fieldInicio.classList.add('field-error');
+        valid = false;
+      } else {
+        feedbackInicio.textContent = '';
+        feedbackInicio.style.display = 'none';
+        if (fieldInicio && inputInicio.value.trim()) fieldInicio.classList.remove('field-error');
+      }
+
+      // Validar data de término
+      const resultTermino = validateBusinessDay(inputTermino.value);
+      if (!resultTermino.valid) {
+        feedbackTermino.textContent = resultTermino.message;
+        feedbackTermino.style.display = 'block';
+        if (fieldTermino) fieldTermino.classList.add('field-error');
+        valid = false;
+      } else {
+        feedbackTermino.textContent = '';
+        feedbackTermino.style.display = 'none';
+        if (fieldTermino && inputTermino.value.trim()) fieldTermino.classList.remove('field-error');
+      }
+
+      // Validar se término é posterior ao início
+      if (inputInicio.value && inputTermino.value && valid) {
+        const [y1, m1, d1] = inputInicio.value.split('-').map(Number);
+        const [y2, m2, d2] = inputTermino.value.split('-').map(Number);
+        const dataInicio = new Date(y1, m1 - 1, d1);
+        const dataTermino = new Date(y2, m2 - 1, d2);
+        if (dataTermino < dataInicio) {
+          feedbackTermino.textContent = 'A data de término deve ser posterior à data de início.';
+          feedbackTermino.style.display = 'block';
+          if (fieldTermino) fieldTermino.classList.add('field-error');
+          valid = false;
+        }
+      }
+
+      return valid;
+    }
+
+    function applyDocType(type) {
+      const docInput = document.getElementById('cliente-doc-numero');
+      const selectedLabel = document.getElementById('cliente-doc-selected');
+      const hiddenType = document.getElementById('cliente-doc-tipo');
+      const config = docTypeMasks[type] || docTypeMasks.CPF;
+      hiddenType.value = type;
+      selectedLabel.textContent = type;
+      docInput.placeholder = config.placeholder;
+      docInput.maxLength = config.maxDigits;
+      docInput.value = sanitizeDigits(docInput.value).slice(0, config.maxDigits);
+    }
+
+    function setupCustomDocumentSelect() {
+      const select = document.getElementById('cliente-doc-select');
+      const trigger = document.getElementById('cliente-doc-trigger');
+      const menu = document.getElementById('cliente-doc-menu');
+      const options = Array.from(menu.querySelectorAll('.custom-select-option'));
+
+      const closeMenu = () => {
+        select.classList.remove('open');
+        trigger.setAttribute('aria-expanded', 'false');
+      };
+
+      trigger.addEventListener('click', event => {
+        event.stopPropagation();
+        const isOpen = select.classList.toggle('open');
+        trigger.setAttribute('aria-expanded', String(isOpen));
+      });
+
+      options.forEach(option => {
+        option.addEventListener('click', () => {
+          options.forEach(btn => {
+            btn.classList.remove('selected');
+            btn.setAttribute('aria-selected', 'false');
+          });
+          option.classList.add('selected');
+          option.setAttribute('aria-selected', 'true');
+          applyDocType(option.dataset.value);
+          closeMenu();
+        });
+      });
+
+      document.addEventListener('click', event => {
+        if (!select.contains(event.target)) closeMenu();
+      });
+    }
+
+    document.getElementById('cliente-doc-numero').addEventListener('input', event => {
+      const type = document.getElementById('cliente-doc-tipo').value;
+      const maxDigits = docTypeMasks[type].maxDigits;
+      event.target.value = sanitizeDigits(event.target.value).slice(0, maxDigits);
+    });
+
+    document.getElementById('cliente-telefone').addEventListener('input', event => {
+      event.target.value = formatPhone(event.target.value);
+    });
+
+    document.getElementById('cliente-endereco-cep').addEventListener('input', event => {
+      event.target.value = formatCep(event.target.value);
+    });
+
+    document.getElementById('cliente-endereco-uf').addEventListener('input', event => {
+      event.target.value = event.target.value.replace(/[^a-zA-Z]/g, '').toUpperCase().slice(0, 2);
+    });
+
+    document.getElementById('obra-valor').addEventListener('input', event => {
+      event.target.value = formatCurrencyFromDigits(event.target.value);
+    });
+
+    document.getElementById('obra-data-inicio').addEventListener('change', updateObraDateFeedback);
+    document.getElementById('obra-data-termino').addEventListener('change', updateObraDateFeedback);
+
+    document.getElementById('obra-cep').addEventListener('input', event => {
+      event.target.value = formatCep(event.target.value);
+    });
+
+    document.getElementById('obra-uf').addEventListener('input', event => {
+      event.target.value = event.target.value.replace(/[^a-zA-Z]/g, '').toUpperCase().slice(0, 2);
+    });
+
+    document.getElementById('obra-cliente-select').addEventListener('change', event => {
+      if (event.target.value === '') {
+        state.selectedClienteIndex = null;
+        updateClienteCards();
+        renderClientesList();
+        return;
+      }
+      selectCliente(Number(event.target.value));
+    });
+
+    document.getElementById('btn-save-cliente').addEventListener('click', async () => {
+      const clienteInputs = [
+        document.getElementById('cliente-nome'),
+        document.getElementById('cliente-doc-numero'),
+        document.getElementById('cliente-telefone'),
+        document.getElementById('cliente-email'),
+        document.getElementById('cliente-endereco-cep'),
+        document.getElementById('cliente-endereco-logradouro'),
+        document.getElementById('cliente-endereco-numero'),
+        document.getElementById('cliente-endereco-bairro'),
+        document.getElementById('cliente-endereco-cidade'),
+        document.getElementById('cliente-endereco-uf')
+      ];
+
+      if (!validateRequiredFields(clienteInputs)) {
+        return showToast('O cliente não foi cadastrado pois todos os campos precisam ser preenchidos.', 'error');
+      }
+
+      const docType = document.getElementById('cliente-doc-tipo').value;
+      const docDigits = sanitizeDigits(document.getElementById('cliente-doc-numero').value);
+      if (docDigits.length !== docTypeMasks[docType].maxDigits) {
+        return showToast(`Informe um ${docType} com ${docTypeMasks[docType].maxDigits} números.`, 'error');
+      }
+
+      const phoneDigits = sanitizeDigits(document.getElementById('cliente-telefone').value);
+      if (phoneDigits.length < 10 || phoneDigits.length > 11) {
+        return showToast('Informe um telefone com DDD e número com 8 ou 9 dígitos (formatos: (00) 0000-0000 ou (00) 00000-0000).', 'error');
+      }
+
+      const nome = document.getElementById('cliente-nome').value.trim();
+      const endereco = {
+        cep: document.getElementById('cliente-endereco-cep').value.trim(),
+        logradouro: document.getElementById('cliente-endereco-logradouro').value.trim(),
+        numero: document.getElementById('cliente-endereco-numero').value.trim(),
+        complemento: document.getElementById('cliente-endereco-complemento').value.trim(),
+        bairro: document.getElementById('cliente-endereco-bairro').value.trim(),
+        cidade: document.getElementById('cliente-endereco-cidade').value.trim(),
+        uf: document.getElementById('cliente-endereco-uf').value.trim()
+      };
+      const enderecoCompleto = `${endereco.logradouro}, ${endereco.numero}${endereco.complemento ? `, ${endereco.complemento}` : ''} — ${endereco.bairro}, ${endereco.cidade} - ${endereco.uf} (${endereco.cep})`;
+
+      const cliente = {
+        nome,
+        documento: `${docType}: ${docDigits}`,
+        telefone: document.getElementById('cliente-telefone').value.trim(),
+        email: document.getElementById('cliente-email').value.trim(),
+        endereco
+      };
+
+      if (currentProfile) {
+        try {
+          const savedCliente = await window.BelfortSupabase.insertCliente(currentProfile, cliente);
+          cliente.id = savedCliente.id;
+        } catch (error) {
+          return showToast(error.message || 'Erro ao salvar cliente no banco.', 'error');
+        }
+      }
+
+      state.clientes.push(cliente);
+      document.getElementById('clientes-count').textContent = state.clientes.length;
+      renderClientesList();
+      updateObraOptions();
+      addNotification('Clientes', `Novo cliente cadastrado: ${nome}.`, 'clientes', '#clientes-list-card');
+      showToast('Cadastro de cliente realizado com sucesso!', 'success');
+
+      if (state.selectedClienteIndex === null) {
+        selectCliente(state.clientes.length - 1);
+      }
+    });
+
+    document.getElementById('btn-save-obra').addEventListener('click', async () => {
+      const obraClienteSelect = document.getElementById('obra-cliente-select');
+      if (obraClienteSelect.value !== '') {
+        state.selectedClienteIndex = Number(obraClienteSelect.value);
+      }
+
+      if (state.selectedClienteIndex === null) {
+        return showToast('Selecione um cliente para cadastrar a obra.', 'error');
+      }
+
+      const obraInputs = [
+        document.getElementById('obra-descricao'),
+        document.getElementById('obra-data-inicio'),
+        document.getElementById('obra-data-termino'),
+        document.getElementById('obra-valor'),
+        document.getElementById('obra-cep'),
+        document.getElementById('obra-logradouro'),
+        document.getElementById('obra-numero'),
+        document.getElementById('obra-bairro'),
+        document.getElementById('obra-cidade'),
+        document.getElementById('obra-uf')
+      ];
+
+      if (!validateRequiredFields(obraInputs)) {
+        return showToast('A obra não foi cadastrada pois todos os campos precisam ser preenchidos.', 'error');
+      }
+
+      if (!updateObraDateFeedback()) {
+        return showToast('As datas devem ser dias úteis e a de término deve ser posterior à de início.', 'error');
+      }
+
+      const obra = {
+        descricao: document.getElementById('obra-descricao').value.trim(),
+        dataInicio: document.getElementById('obra-data-inicio').value,
+        dataTermino: document.getElementById('obra-data-termino').value,
+        valor: document.getElementById('obra-valor').value.trim(),
+        endereco: {
+          cep: document.getElementById('obra-cep').value.trim(),
+          logradouro: document.getElementById('obra-logradouro').value.trim(),
+          numero: document.getElementById('obra-numero').value.trim(),
+          complemento: document.getElementById('obra-complemento').value.trim(),
+          bairro: document.getElementById('obra-bairro').value.trim(),
+          cidade: document.getElementById('obra-cidade').value.trim(),
+          uf: document.getElementById('obra-uf').value.trim()
+        },
+        clienteIndex: state.selectedClienteIndex,
+        clienteNome: state.clientes[state.selectedClienteIndex].nome
+      };
+
+      if (currentProfile) {
+        const clienteId = state.clientes[state.selectedClienteIndex].id;
+        if (!clienteId) return showToast('Cliente ainda não está sincronizado com o banco.', 'error');
+        try {
+          const savedObra = await window.BelfortSupabase.insertObra(currentProfile, obra, clienteId);
+          obra.id = savedObra.id;
+          obra.clienteId = clienteId;
+        } catch (error) {
+          return showToast(error.message || 'Erro ao salvar obra no banco.', 'error');
+        }
+      }
+
+      state.obras.push(obra);
+      document.getElementById('obras-count').textContent = state.obras.length;
+      renderObrasDoCliente();
+      renderClientesList();
+      updateObraOptions();
+      updateClienteCards();
+      addNotification('Obras', `Obra cadastrada para ${obra.clienteNome}: ${obra.descricao}.`, 'clientes', '#obras-list-card');
+      showToast('Cadastro de obra realizado com sucesso!', 'success');
+    });
+
+    document.getElementById('btn-update-docs').addEventListener('click', async () => {
+      const selectedObra = getSelectedDocumentObra();
+      if (!selectedObra) return showToast('Selecione uma obra para atualizar documentos.', 'error');
+      if (currentProfile) {
+        if (!selectedObra.id) return showToast('Obra ainda não está sincronizada com o banco.', 'error');
+        try {
+          await window.BelfortSupabase.upsertObraDocumentos(currentProfile, selectedObra.id, collectDocumentChecklist());
+        } catch (error) {
+          return showToast(error.message || 'Erro ao salvar documentos no banco.', 'error');
+        }
+      }
+      selectedObra.documentos = collectDocumentChecklist();
+      addNotification('Documentos', `Documentos atualizados para "${selectedObra.descricao}".`, 'documentos', '#documento-obra');
+      showToast('Documentos atualizados com sucesso!', 'success');
+    });
+
+    function toggleCard(cardId) {
+      const card = document.getElementById(cardId);
+      card.style.display = card.style.display === 'none' ? 'block' : 'none';
+    }
+
+    document.getElementById('btn-view-clientes').addEventListener('click', () => toggleCard('clientes-list-card'));
+
+    async function addNotification(tag, description, targetPage = 'notificacoes', targetSelector = '') {
+      const notification = {
+        tag,
+        description,
+        time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+        unread: true,
+        targetPage,
+        targetSelector
+      };
+      if (currentProfile) {
+        try {
+          const saved = await window.BelfortSupabase.insertNotification(currentProfile, notification);
+          notification.id = saved.id;
+        } catch (error) {
+          return showToast(error.message || 'Erro ao salvar notificação no banco.', 'error');
+        }
+      }
+      state.notifications.unshift(notification);
+      renderNotifications();
+    }
+
+    async function markNotificationAsRead(index) {
+      if (!state.notifications[index]) return;
+      const notification = state.notifications[index];
+      const previousUnread = notification.unread;
+      notification.unread = false;
+      renderNotifications();
+      if (currentProfile && notification.id) {
+        try {
+          await window.BelfortSupabase.markNotificationRead(currentProfile, notification.id);
+        } catch (error) {
+          notification.unread = previousUnread;
+          renderNotifications();
+          showToast(error.message || 'Erro ao marcar notificação como lida.', 'error');
+        }
+      }
+    }
+
+    async function openNotification(index) {
+      const notification = state.notifications[index];
+      if (!notification) return;
+      await markNotificationAsRead(index);
+      showPage(notification.targetPage || 'notificacoes');
+      if (notification.targetSelector) {
+        const target = document.querySelector(notification.targetSelector);
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          target.classList.add('section-focus');
+          setTimeout(() => target.classList.remove('section-focus'), 1500);
+        }
+      }
+    }
+    window.openNotification = openNotification;
+    window.markNotificationAsRead = markNotificationAsRead;
+
+    function renderNotifications() {
+      const list = document.getElementById('notif-list');
+      const unread = state.notifications.filter(n => n.unread).length;
+      document.getElementById('notificacoes-badge').textContent = `${unread} não lidas`;
+      document.querySelector('.tb-badge').textContent = unread;
+      document.querySelector('.sb-notif-badge').textContent = unread;
+      if (!state.notifications.length) {
+        list.innerHTML = '<div class="notif-item"><div class="notif-body"><p class="notif-desc">Sem notificações no momento.</p></div></div>';
+        return;
+      }
+      list.innerHTML = state.notifications.map((n, index) => `
+    <button class="notif-item ${n.unread ? 'unread' : ''}" onclick="openNotification(${index})">
+      <div class="notif-dot ${n.unread ? 'orange' : 'muted'}" onclick="event.stopPropagation(); markNotificationAsRead(${index})"></div>
+      <div class="notif-body">
+        <div class="notif-top"><span class="notif-title">${n.tag}</span><span class="notif-time">${n.time}</span></div>
+        <p class="notif-desc">${n.description}</p><span class="notif-tag">${n.tag}</span>
+      </div>
+    </button>
+  `).join('');
+    }
+
+    function renderEstoque() {
+      const total = state.estoqueEpis.reduce((sum, item) => sum + item.total, 0);
+      const emUso = state.estoqueEpis.reduce((sum, item) => sum + item.emUso, 0);
+      const naoUso = total - emUso;
+      const disponivel = naoUso;
+
+      document.getElementById('estoque-total').textContent = total;
+      document.getElementById('estoque-uso').textContent = emUso;
+      document.getElementById('estoque-nao-uso').textContent = naoUso;
+      document.getElementById('estoque-disponivel').textContent = disponivel;
+
+      document.getElementById('estoque-lista').innerHTML = state.estoqueEpis.map(item => `
+    <div class="file-item estoque-item">
+      <div class="file-info">
+        <span class="file-name">${item.nome}</span>
+        <span class="file-size">Total: ${item.total} • Em uso: ${item.emUso} • Disponível: ${item.total - item.emUso}</span>
+      </div>
+      <div class="estoque-controls">
+        <div class="estoque-control-group">
+          <span class="estoque-control-label">Total</span>
+          <button class="estoque-step-btn" data-action="decrease" data-name="${item.nome}" aria-label="Reduzir quantidade total">-</button>
+          <input class="estoque-input" type="number" min="${item.emUso}" value="${item.total}" data-action="set" data-name="${item.nome}" aria-label="Quantidade total em estoque de ${item.nome}">
+          <button class="estoque-step-btn" data-action="increase" data-name="${item.nome}" aria-label="Aumentar quantidade total">+</button>
+        </div>
+        <div class="estoque-control-group">
+          <span class="estoque-control-label">Em uso</span>
+          <button class="estoque-step-btn" data-action="decrease-use" data-name="${item.nome}" aria-label="Reduzir EPIs em uso">-</button>
+          <input class="estoque-input estoque-input-readonly" type="number" value="${item.emUso}" readonly aria-label="Quantidade de EPIs em uso de ${item.nome}">
+          <button class="estoque-step-btn" data-action="increase-use" data-name="${item.nome}" aria-label="Aumentar EPIs em uso">+</button>
+        </div>
+        <button class="estoque-remove-btn" data-action="remove" data-name="${item.nome}" aria-label="Excluir ${item.nome}">
+          ${getTrashIconMarkup()}
+        </button>
+      </div>
+    </div>
+  `).join('');
+    }
+
+    function clampEstoqueItem(item) {
+      item.total = Math.max(0, Number(item.total) || 0);
+      item.emUso = Math.max(0, Number(item.emUso) || 0);
+      item.emUso = Math.min(item.emUso, item.total);
+    }
+
+    document.getElementById('estoque-lista').addEventListener('click', async event => {
+      const removeBtn = event.target.closest('.estoque-remove-btn');
+      if (removeBtn) {
+        const nome = removeBtn.dataset.name;
+        if (nome) await removeEpiByName(nome);
+        return;
+      }
+
+      const button = event.target.closest('.estoque-step-btn');
+      if (!button) return;
+
+      const nome = button.dataset.name;
+      const item = state.estoqueEpis.find(epi => epi.nome === nome);
+      if (!item) return;
+
+      const previous = { total: item.total, emUso: item.emUso };
+      const action = button.dataset.action;
+      if (action === 'increase' || action === 'decrease') {
+        const step = action === 'increase' ? 1 : -1;
+        item.total = item.total + step;
+      }
+
+      // Controlador dedicado para EPIs em uso (+ / -), sem permitir valor negativo.
+      if (action === 'increase-use') {
+        item.emUso = item.emUso + 1;
+      }
+      if (action === 'decrease-use') {
+        item.emUso = item.emUso - 1;
+      }
+
+      clampEstoqueItem(item);
+      if (!(await persistEpiItem(item))) {
+        item.total = previous.total;
+        item.emUso = previous.emUso;
+      }
+      renderEstoque();
+    });
+
+    document.getElementById('estoque-lista').addEventListener('change', async event => {
+      const input = event.target.closest('.estoque-input');
+      if (!input) return;
+
+      const nome = input.dataset.name;
+      const item = state.estoqueEpis.find(epi => epi.nome === nome);
+      if (!item) return;
+
+      const previous = { total: item.total, emUso: item.emUso };
+      const requested = Number(input.value);
+      if (input.dataset.field === 'emUso') {
+        item.emUso = requested;
+      } else {
+        item.total = requested;
+      }
+      clampEstoqueItem(item);
+      if (!(await persistEpiItem(item))) {
+        item.total = previous.total;
+        item.emUso = previous.emUso;
+      }
+      renderEstoque();
+    });
+
+    let toastTimer;
+    function showToast(msg, type = 'success') {
+      clearTimeout(toastTimer);
+      const t = document.getElementById('toast');
+      const icon = t.querySelector('.toast-icon');
+      let toastMsg = t.querySelector('#toast-msg');
+      if (!toastMsg) {
+        toastMsg = document.createElement('span');
+        toastMsg.id = 'toast-msg';
+        t.appendChild(toastMsg);
+      }
+      toastMsg.textContent = msg;
+      t.classList.remove('error');
+      if (type === 'error') {
+        t.classList.add('error');
+        icon.innerHTML = '<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>';
+      } else {
+        icon.innerHTML = '<polyline points="20 6 9 17 4 12"></polyline>';
+      }
+      t.classList.add('show');
+      toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+    }
+
+    // ========== CONFIGURAÇÕES INICIAIS ==========
+    const pages = {
+      'epi': 'Ficha de EPI',
+      'clientes': 'Clientes e Obras',
+      'pagamento-obras': 'Pagamento de Obras',
+      'clientes-lista': 'Clientes',
+      'cadastro-profissionais': 'Cadastro de Profissionais',
+      'profissionais-lista': 'Profissionais',
+      'documentos': 'Documentos da Obra',
+      'documentos-gerais': 'Documentos Gerais',
+      'estoque': 'Estoque EPI',
+      'equipamentos': 'Equipamentos',
+      'notificacoes': 'Notificações'
+    };
+
+    // ========== ESTADO DA APLICAÇÃO ==========
+    const state = {
+      clientes: [],
+      obras: [],
+      notifications: [],
+      selectedClienteIndex: null,
+      expandedClienteIndex: null,
+      expandedObraIndex: null,
+      sidebarCollapsed: false,
+      estoqueEpis: [
+        { nome: 'Capacete de segurança', total: 32, emUso: 20 },
+        { nome: 'Luva de segurança', total: 85, emUso: 60 },
+        { nome: 'Óculos de proteção', total: 50, emUso: 35 },
+        { nome: 'Protetor auricular', total: 100, emUso: 70 },
+        { nome: 'Máscara PFF2', total: 200, emUso: 150 },
+        { nome: 'Cinto de segurança', total: 25, emUso: 18 },
+        { nome: 'Bota de segurança', total: 60, emUso: 45 },
+        { nome: 'Uniforme de brim', total: 80, emUso: 55 },
+        { nome: 'Capa de chuva', total: 30, emUso: 20 },
+        { nome: 'Máscara respiratória', total: 40, emUso: 25 },
+        { nome: 'Protetor facial', total: 35, emUso: 22 },
+        { nome: 'Calçado de segurança', total: 45, emUso: 30 }
+      ],
+      profissionais: [],
+      equipamentos: [
+        { nome: 'Furadeira', total: 10, emUso: 6 },
+        { nome: 'Betoneira', total: 5, emUso: 3 },
+        { nome: 'Andaime', total: 20, emUso: 15 },
+        { nome: 'Marreta', total: 15, emUso: 10 },
+        { nome: 'Cimento', total: 100, emUso: 0 },
+        { nome: 'Serra Circular', total: 8, emUso: 5 }
+      ],
+      cnd: {
+        ano: new Date().getFullYear(),
+        meses: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0 }
+      }
+    };
+
+    function formatDbMoney(value) {
+      return value ? `R$ ${Number(value || 0).toFixed(2).replace('.', ',')}` : '';
+    }
+
+    function mapDbParcelas(rows) {
+      return (rows || [])
+        .slice()
+        .sort((a, b) => a.numero - b.numero)
+        .map(row => ({
+          data: row.vencimento || '',
+          valor: formatDbMoney(row.valor),
+          percentual: ''
+        }));
+    }
+
+    function mapDbCliente(row) {
+      const artRow = row.cliente_art_pagamentos && row.cliente_art_pagamentos[0];
+      const cliente = {
+        id: row.id,
+        nome: row.nome,
+        documento: `${row.documento_tipo}: ${row.documento_numero}`,
+        telefone: row.telefone || '',
+        email: row.email || '',
+        endereco: {
+          cep: row.endereco_cep || '', logradouro: row.endereco_logradouro || '', numero: row.endereco_numero || '',
+          complemento: row.endereco_complemento || '', bairro: row.endereco_bairro || '', cidade: row.endereco_cidade || '', uf: row.endereco_uf || ''
+        }
+      };
+      if (artRow) {
+        cliente.art = {
+          valorAcordado: formatDbMoney(artRow.valor_acordado),
+          pagamento: {
+            tipo: artRow.tipo,
+            valorPago: formatDbMoney(artRow.valor_pago),
+            dataPagamento: artRow.data_pagamento || '',
+            entrada: formatDbMoney(artRow.entrada),
+            valorParcela: formatDbMoney(artRow.valor_parcela),
+            quantidadeParcelas: artRow.quantidade_parcelas || '',
+            parcelas: mapDbParcelas(artRow.cliente_art_parcelas)
+          }
+        };
+      }
+      return cliente;
+    }
+
+    function mapDbObra(row, clientes) {
+      const clienteIndex = clientes.findIndex(cliente => cliente.id === row.cliente_id);
+      const pagamentoRow = row.obra_pagamentos && row.obra_pagamentos[0];
+      const obra = {
+        id: row.id,
+        descricao: row.descricao,
+        dataInicio: row.data_inicio,
+        dataTermino: row.data_termino,
+        valor: `R$ ${Number(row.valor || 0).toFixed(2).replace('.', ',')}`,
+        endereco: {
+          cep: row.endereco_cep || '', logradouro: row.endereco_logradouro || '', numero: row.endereco_numero || '',
+          complemento: row.endereco_complemento || '', bairro: row.endereco_bairro || '', cidade: row.endereco_cidade || '', uf: row.endereco_uf || ''
+        },
+        clienteIndex,
+        clienteId: row.cliente_id,
+        clienteNome: clientes[clienteIndex]?.nome || 'Cliente'
+      };
+      if (pagamentoRow) {
+        obra.pagamento = {
+          tipo: pagamentoRow.tipo,
+          valorPago: formatDbMoney(pagamentoRow.valor_pago),
+          dataPagamento: pagamentoRow.data_pagamento || '',
+          entrada: formatDbMoney(pagamentoRow.entrada),
+          valorParcela: formatDbMoney(pagamentoRow.valor_parcela),
+          quantidadeParcelas: pagamentoRow.quantidade_parcelas || '',
+          parcelas: mapDbParcelas(pagamentoRow.obra_pagamento_parcelas)
+        };
+      }
+      if (row.obra_documentos) {
+        obra.documentos = row.obra_documentos.map(doc => ({ nome: doc.nome, checked: !!doc.checked }));
+      } else {
+        obra.documentos = defaultDocumentStatuses.map(doc => ({ ...doc }));
+      }
+      return obra;
+    }
+
+    function mapDbStock(row, relationName) {
+      const stock = row[relationName] && row[relationName][0] ? row[relationName][0] : {};
+      return { id: row.id, nome: row.nome, total: stock.total || 0, emUso: stock.em_uso || 0 };
+    }
+
+    async function loadDataFromSupabase() {
+      if (!currentProfile) return;
+      const data = await window.BelfortSupabase.loadDashboardData(currentProfile);
+      state.clientes = data.clientes.map(mapDbCliente);
+      state.obras = data.obras.map(row => mapDbObra(row, state.clientes));
+      state.estoqueEpis = data.epis.map(row => mapDbStock(row, 'epi_estoque'));
+      state.equipamentos = data.equipamentos.map(row => mapDbStock(row, 'equipamento_estoque'));
+      state.profissionais = data.profissionais.map(row => ({
+        id: row.id,
+        nome: row.nome,
+        profissao: row.profissao || '',
+        documento: row.documento || '',
+        telefone: row.telefone || '',
+        email: row.email || '',
+        endereco: row.endereco || '',
+        observacoes: row.observacoes || '',
+        treinamentos: (row.profissional_treinamentos || []).map(t => ({ nome: t.nome, tipo: t.tipo, data: t.data_treinamento, observacoes: t.observacoes }))
+      }));
+      state.notifications = data.notifications.map(row => ({
+        id: row.id,
+        tag: row.tag,
+        description: row.description,
+        time: new Date(row.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+        unread: row.unread,
+        targetPage: row.target_page,
+        targetSelector: row.target_selector
+      }));
+      data.cnd.forEach(row => {
+        if (row.ano === state.cnd.ano) state.cnd.meses[row.mes] = Number(row.valor_pago || 0);
+      });
+      document.getElementById('clientes-count').textContent = state.clientes.length;
+      document.getElementById('obras-count').textContent = state.obras.length;
+      updateEpiRegistradosCount();
+      renderClientesList();
+      renderObrasDoCliente();
+      updateObraOptions();
+      updateClienteCards();
+      renderEstoque();
+      renderNotifications();
+      renderEquipamentos();
+      dashboardDataLoaded = true;
+    }
+
+    // ========== FUNÇÕES DE RENDERIZAÇÃO EXISTENTES (mantidas) ==========
+    function renderClientesList() {
+      const c = document.getElementById('clientes-list');
+      if (!state.clientes.length) { c.innerHTML = '<p class="stat-sub">Nenhum cliente cadastrado.</p>'; return; }
+      c.innerHTML = state.clientes.map((cl, idx) => `
+    <div class="accordion-item">
+      <button class="accordion-toggle" onclick="toggleClienteDetails(${idx})">
+        <span>${cl.nome}</span>
+        <span style="font-size:12px;color:var(--txt-muted)">${cl.documento}</span>
+      </button>
+      <div class="accordion-content" id="cli-detail-${idx}" style="display:${state.expandedClienteIndex === idx ? 'block' : 'none'}">
+        <div class="accordion-content-inner">
+          <p><strong>Telefone:</strong> ${cl.telefone || 'Não informado'}</p>
+          <p><strong>E-mail:</strong> ${cl.email || 'Não informado'}</p>
+          <p><strong>Endereço:</strong> ${cl.endereco ? cl.endereco.logradouro + ', ' + cl.endereco.numero + (cl.endereco.complemento ? ', ' + cl.endereco.complemento : '') + ' — ' + cl.endereco.bairro + ', ' + cl.endereco.cidade + ' - ' + cl.endereco.uf + ' (' + cl.endereco.cep + ')' : 'Não informado'}</p>
+        </div>
+      </div>
+    </div>
+  `).join('');
+    }
+
+    // ========== NOVAS FUNÇÕES: Pagamento de Obras ==========
+    async function persistObraPagamento(obra) {
+      if (!currentProfile || !obra.id || !obra.pagamento) return true;
+      try {
+        await window.BelfortSupabase.upsertObraPagamento(currentProfile, obra, obra.pagamento);
+        return true;
+      } catch (error) {
+        showToast(error.message || 'Erro ao salvar pagamento da obra no banco.', 'error');
+        return false;
+      }
+    }
+
+    async function persistClienteArt(cliente) {
+      if (!currentProfile || !cliente.id || !cliente.art) return true;
+      try {
+        await window.BelfortSupabase.upsertClienteArt(currentProfile, cliente, cliente.art);
+        return true;
+      } catch (error) {
+        showToast(error.message || 'Erro ao salvar ART no banco.', 'error');
+        return false;
+      }
+    }
+
+    function renderPagamentoObrasList() {
+      const container = document.getElementById('pagamento-obras-list');
+      if (!state.obras.length) { container.innerHTML = '<p class="stat-sub">Nenhuma obra cadastrada.</p>'; updatePagamentoObrasStats(); return; }
+      container.innerHTML = state.obras.map((obra, idx) => {
+        const pagamento = obra.pagamento || {};
+        const isVista = pagamento.tipo === 'vista';
+        const isParcelado = pagamento.tipo === 'parcelado';
+        return `
+    <div class="accordion-item">
+      <button class="accordion-toggle" onclick="toggleObraPagamento(${idx})">
+        <span>${obra.descricao}</span>
+        <span style="font-size:12px;color:var(--txt-muted)">${obra.clienteNome} — ${pagamento.tipo ? (isVista ? 'À Vista' : 'Parcelado') : 'Sem pagamento'}</span>
+      </button>
+      <div class="accordion-content" id="obra-pag-${idx}" style="display:none">
+        <div class="accordion-content-inner">
+          <p><strong>Cliente:</strong> ${obra.clienteNome}</p>
+          <p><strong>Início:</strong> ${obra.dataInicio || obra.data || 'Não informado'}</p>
+          <p><strong>Término:</strong> ${obra.dataTermino || 'Não informado'}</p>
+          <p><strong>Endereço:</strong> ${obra.endereco && typeof obra.endereco === 'object' ? obra.endereco.logradouro + ', ' + obra.endereco.numero + (obra.endereco.complemento ? ', ' + obra.endereco.complemento : '') + ' — ' + obra.endereco.bairro + ', ' + obra.endereco.cidade + ' - ' + obra.endereco.uf + ' (' + obra.endereco.cep + ')' : (obra.endereco || 'Não informado')}</p>
+          <p><strong>Valor do Contrato:</strong> ${obra.valor}</p>
+          <hr style="border-color:var(--border);margin:12px 0">
+          <div class="pay-type-selector" style="margin-bottom:12px">
+            <button class="pay-type-btn ${isVista ? 'selected' : ''}" onclick="selectPagamentoType(${idx},'vista',this)">À Vista</button>
+            <button class="pay-type-btn ${isParcelado ? 'selected' : ''}" onclick="selectPagamentoType(${idx},'parcelado',this)">Parcelado</button>
+          </div>
+          <div id="pag-vista-${idx}" style="display:${isVista ? 'block' : 'none'}">
+            <div class="form-row">
+              <div class="field">
+                <label class="field-label">Valor Pago</label>
+                <input type="text" class="field-input" id="pag-vista-valor-${idx}" value="${pagamento.valorPago || ''}" placeholder="R$ 0,00" inputmode="numeric">
+              </div>
+              <div class="field">
+                <label class="field-label">Data do Pagamento</label>
+                <input type="date" class="field-input" id="pag-vista-data-${idx}" value="${pagamento.dataPagamento || ''}">
+              </div>
+            </div>
+            <button class="btn-primary" onclick="confirmarPagamentoVista(${idx})">Confirmar Pagamento</button>
+          </div>
+          <div id="pag-parcelado-${idx}" style="display:${isParcelado ? 'block' : 'none'}">
+            <div class="form-row">
+              <div class="field">
+                <label class="field-label">Entrada</label>
+                <input type="text" class="field-input" id="pag-entrada-${idx}" value="${pagamento.entrada || ''}" placeholder="R$ 0,00" inputmode="numeric">
+              </div>
+              <div class="field">
+                <label class="field-label">Valor da Parcela</label>
+                <input type="text" class="field-input" id="pag-parcela-valor-${idx}" value="${pagamento.valorParcela || ''}" placeholder="R$ 0,00" inputmode="numeric">
+              </div>
+              <div class="field">
+                <label class="field-label">Qtd Parcelas</label>
+                <input type="number" class="field-input" id="pag-parcelas-qtd-${idx}" value="${pagamento.quantidadeParcelas || ''}" min="1" style="max-width:100px">
+              </div>
+            </div>
+            <button class="btn-primary" onclick="gerarParcelasObra(${idx})">Gerar Parcelas</button>
+            <div id="pag-parcelas-tabela-${idx}" style="margin-top:12px">
+              ${isParcelado && pagamento.parcelas ? renderTabelaParcelas(pagamento.parcelas, obra.valor) : ''}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+      }).join('');
+      updatePagamentoObrasStats();
+    }
+
+    function toggleObraPagamento(idx) {
+      const el = document.getElementById('obra-pag-' + idx);
+      if (el.style.display === 'none') {
+        document.querySelectorAll('#pagamento-obras-list .accordion-content').forEach(e => e.style.display = 'none');
+        el.style.display = 'block';
+      } else {
+        el.style.display = 'none';
+      }
+    }
+
+    function selectPagamentoType(obraIdx, tipo, btn) {
+      const container = btn.closest('.accordion-content-inner');
+      container.querySelectorAll('.pay-type-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      container.querySelector('#pag-vista-' + obraIdx).style.display = tipo === 'vista' ? 'block' : 'none';
+      container.querySelector('#pag-parcelado-' + obraIdx).style.display = tipo === 'parcelado' ? 'block' : 'none';
+      if (!state.obras[obraIdx].pagamento) state.obras[obraIdx].pagamento = {};
+      state.obras[obraIdx].pagamento.tipo = tipo;
+    }
+
+    async function confirmarPagamentoVista(obraIdx) {
+      const valor = document.getElementById('pag-vista-valor-' + obraIdx).value.trim();
+      const data = document.getElementById('pag-vista-data-' + obraIdx).value;
+      if (!valor) return showToast('Informe o valor pago.', 'error');
+      if (!data) return showToast('Informe a data do pagamento.', 'error');
+      state.obras[obraIdx].pagamento = state.obras[obraIdx].pagamento || {};
+      state.obras[obraIdx].pagamento.tipo = 'vista';
+      state.obras[obraIdx].pagamento.valorPago = valor;
+      state.obras[obraIdx].pagamento.dataPagamento = data;
+      if (!(await persistObraPagamento(state.obras[obraIdx]))) return;
+      renderPagamentoObrasList();
+      showToast('Pagamento à vista confirmado!', 'success');
+      addNotification('Obra', `Pagamento à vista confirmado para ${state.obras[obraIdx].descricao}`, 'pagamento-obras');
+    }
+
+    async function gerarParcelasObra(obraIdx) {
+      const entrada = document.getElementById('pag-entrada-' + obraIdx).value.trim();
+      const valorParcela = document.getElementById('pag-parcela-valor-' + obraIdx).value.trim();
+      const qtd = parseInt(document.getElementById('pag-parcelas-qtd-' + obraIdx).value);
+      if (!valorParcela || !qtd) return showToast('Preencha valor da parcela e quantidade.', 'error');
+      const obra = state.obras[obraIdx];
+      const parcelas = gerarParcelamento(obra.valor, entrada, valorParcela, qtd, obra.dataInicio || obra.data);
+      obra.pagamento = obra.pagamento || {};
+      obra.pagamento.tipo = 'parcelado';
+      obra.pagamento.entrada = entrada;
+      obra.pagamento.valorParcela = valorParcela;
+      obra.pagamento.quantidadeParcelas = qtd;
+      obra.pagamento.parcelas = parcelas;
+      if (!(await persistObraPagamento(obra))) return;
+      renderPagamentoObrasList();
+      showToast('Parcelas geradas com sucesso!', 'success');
+    }
+
+    // ========== NOVAS FUNÇÕES: Clientes (ART) ==========
+    function renderClientesLista() {
+      const container = document.getElementById('clientes-lista-pagamento');
+      if (!state.clientes.length) { container.innerHTML = '<p class="stat-sub">Nenhum cliente cadastrado.</p>'; updateClientesListaStats(); return; }
+      container.innerHTML = state.clientes.map((cl, idx) => {
+        const obrasDoCliente = state.obras.filter(o => o.clienteIndex === idx);
+        const art = cl.art || {};
+        const isVista = art.pagamento && art.pagamento.tipo === 'vista';
+        const isParcelado = art.pagamento && art.pagamento.tipo === 'parcelado';
+        return `
+    <div class="accordion-item">
+      <button class="accordion-toggle" onclick="toggleClienteArt(${idx})">
+        <span>${cl.nome}</span>
+        <span style="font-size:12px;color:var(--txt-muted)">${obrasDoCliente.length} obra(s) — ${art.pagamento ? (isVista ? 'ART À Vista' : 'ART Parcelado') : 'ART Pendente'}</span>
+      </button>
+      <div class="accordion-content" id="cli-art-${idx}" style="display:none">
+        <div class="accordion-content-inner">
+          <p><strong>Documento:</strong> ${cl.documento}</p>
+          <p><strong>Contato:</strong> ${cl.telefone || 'Não informado'} — ${cl.email || 'Não informado'}</p>
+          <p><strong>Obras Vinculadas:</strong> ${obrasDoCliente.length ? obrasDoCliente.map(o => o.descricao).join(', ') : 'Nenhuma'}</p>
+          <hr style="border-color:var(--border);margin:12px 0">
+          <h4 style="margin-bottom:8px;color:var(--txt-main)">Pagamento da ART</h4>
+          <div class="form-row">
+            <div class="field">
+              <label class="field-label">Valor Acordado da ART</label>
+              <input type="text" class="field-input" id="art-valor-${idx}" value="${art.valorAcordado || ''}" placeholder="R$ 0,00" inputmode="numeric">
+            </div>
+          </div>
+          <div class="pay-type-selector" style="margin-bottom:12px">
+            <button class="pay-type-btn ${isVista ? 'selected' : ''}" onclick="selectArtType(${idx},'vista',this)">À Vista</button>
+            <button class="pay-type-btn ${isParcelado ? 'selected' : ''}" onclick="selectArtType(${idx},'parcelado',this)">Parcelado</button>
+          </div>
+          <div id="art-vista-${idx}" style="display:${isVista ? 'block' : 'none'}">
+            <div class="form-row">
+              <div class="field">
+                <label class="field-label">Valor Pago</label>
+                <input type="text" class="field-input" id="art-vista-valor-${idx}" value="${art.pagamento && art.pagamento.valorPago || ''}" placeholder="R$ 0,00" inputmode="numeric">
+              </div>
+              <div class="field">
+                <label class="field-label">Data do Pagamento</label>
+                <input type="date" class="field-input" id="art-vista-data-${idx}" value="${art.pagamento && art.pagamento.dataPagamento || ''}">
+              </div>
+            </div>
+            <button class="btn-primary" onclick="confirmarArtVista(${idx})">Confirmar Pagamento ART</button>
+          </div>
+          <div id="art-parcelado-${idx}" style="display:${isParcelado ? 'block' : 'none'}">
+            <div class="form-row">
+              <div class="field">
+                <label class="field-label">Entrada</label>
+                <input type="text" class="field-input" id="art-entrada-${idx}" value="${art.pagamento && art.pagamento.entrada || ''}" placeholder="R$ 0,00" inputmode="numeric">
+              </div>
+              <div class="field">
+                <label class="field-label">Valor da Parcela</label>
+                <input type="text" class="field-input" id="art-parcela-valor-${idx}" value="${art.pagamento && art.pagamento.valorParcela || ''}" placeholder="R$ 0,00" inputmode="numeric">
+              </div>
+              <div class="field">
+                <label class="field-label">Qtd Parcelas</label>
+                <input type="number" class="field-input" id="art-parcelas-qtd-${idx}" value="${art.pagamento && art.pagamento.quantidadeParcelas || ''}" min="1" style="max-width:100px">
+              </div>
+            </div>
+            <button class="btn-primary" onclick="gerarParcelasArt(${idx})">Gerar Parcelas ART</button>
+            <div id="art-parcelas-tabela-${idx}" style="margin-top:12px">
+              ${isParcelado && art.pagamento && art.pagamento.parcelas ? renderTabelaParcelas(art.pagamento.parcelas, art.valorAcordado) : ''}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+      }).join('');
+      updateClientesListaStats();
+    }
+
+    function toggleClienteArt(idx) {
+      const el = document.getElementById('cli-art-' + idx);
+      el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function selectArtType(clienteIdx, tipo, btn) {
+      const container = btn.closest('.accordion-content-inner');
+      container.querySelectorAll('.pay-type-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      container.querySelector('#art-vista-' + clienteIdx).style.display = tipo === 'vista' ? 'block' : 'none';
+      container.querySelector('#art-parcelado-' + clienteIdx).style.display = tipo === 'parcelado' ? 'block' : 'none';
+      if (!state.clientes[clienteIdx].art) state.clientes[clienteIdx].art = { pagamento: {} };
+      if (!state.clientes[clienteIdx].art.pagamento) state.clientes[clienteIdx].art.pagamento = {};
+      state.clientes[clienteIdx].art.pagamento.tipo = tipo;
+    }
+
+    async function confirmarArtVista(clienteIdx) {
+      const valorAcordado = document.getElementById('art-valor-' + clienteIdx).value.trim();
+      const valorPago = document.getElementById('art-vista-valor-' + clienteIdx).value.trim();
+      const data = document.getElementById('art-vista-data-' + clienteIdx).value;
+      if (!valorPago) return showToast('Informe o valor pago.', 'error');
+      if (!data) return showToast('Informe a data do pagamento.', 'error');
+      state.clientes[clienteIdx].art = state.clientes[clienteIdx].art || {};
+      state.clientes[clienteIdx].art.valorAcordado = valorAcordado;
+      state.clientes[clienteIdx].art.pagamento = { tipo: 'vista', valorPago, dataPagamento: data };
+      if (!(await persistClienteArt(state.clientes[clienteIdx]))) return;
+      renderClientesLista();
+      showToast('Pagamento de ART à vista confirmado!', 'success');
+    }
+
+    async function gerarParcelasArt(clienteIdx) {
+      const valorAcordado = document.getElementById('art-valor-' + clienteIdx).value.trim();
+      const entrada = document.getElementById('art-entrada-' + clienteIdx).value.trim();
+      const valorParcela = document.getElementById('art-parcela-valor-' + clienteIdx).value.trim();
+      const qtd = parseInt(document.getElementById('art-parcelas-qtd-' + clienteIdx).value);
+      if (!valorParcela || !qtd) return showToast('Preencha valor da parcela e quantidade.', 'error');
+      state.clientes[clienteIdx].art = state.clientes[clienteIdx].art || {};
+      const parcelas = gerarParcelamento(valorAcordado || 'R$ 0,00', entrada, valorParcela, qtd);
+      state.clientes[clienteIdx].art.valorAcordado = valorAcordado;
+      state.clientes[clienteIdx].art.pagamento = { tipo: 'parcelado', entrada, valorParcela, quantidadeParcelas: qtd, parcelas };
+      if (!(await persistClienteArt(state.clientes[clienteIdx]))) return;
+      renderClientesLista();
+      showToast('Parcelas de ART geradas com sucesso!', 'success');
+    }
+
+    // ========== FUNÇÃO GENÉRICA: Gerar Parcelamento ==========
+    function gerarParcelamento(valorTotalStr, entradaStr, valorParcelaStr, qtdParcelas, dataBase) {
+      const parseValor = (v) => parseFloat((v || '0').replace(/[^\d,]/g, '').replace(',', '.')) || 0;
+      const valorTotal = parseValor(valorTotalStr);
+      const entrada = parseValor(entradaStr);
+      const valorParcela = parseValor(valorParcelaStr);
+      const parcelas = [];
+      const base = dataBase ? new Date(dataBase + 'T00:00:00') : new Date();
+      for (let i = 1; i <= qtdParcelas; i++) {
+        const dataParcela = new Date(base);
+        dataParcela.setMonth(dataParcela.getMonth() + i);
+        const valor = valorParcela;
+        const percentual = valorTotal > 0 ? ((valor / valorTotal) * 100).toFixed(2) : 0;
+        parcelas.push({
+          data: dataParcela.toISOString().split('T')[0],
+          valor: 'R$ ' + valor.toFixed(2).replace('.', ','),
+          percentual: percentual + '%'
+        });
+      }
+      return parcelas;
+    }
+
+    function renderTabelaParcelas(parcelas, valorRefStr) {
+      const parseValor = (v) => parseFloat((v || '0').replace(/[^\d,]/g, '').replace(',', '.')) || 0;
+      const valorRef = parseValor(valorRefStr);
+      return `
+    <table class="pay-table">
+      <thead><tr>
+        <th>Nº</th><th>Data</th><th>Valor</th><th>Percentual</th>
+      </tr></thead>
+      <tbody>
+        ${parcelas.map((p, i) => `<tr class="pay-table-row">
+          <td>${i + 1}</td>
+          <td>${p.data}</td>
+          <td>${p.valor}</td>
+          <td>${p.percentual}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+    }
+
+    // ========== NOVAS FUNÇÕES: Cadastro e Lista de Profissionais ==========
+    async function saveProfissional() {
+      const nome = document.getElementById('prof-nome').value.trim();
+      const profissao = document.getElementById('prof-profissao').value.trim();
+      if (!nome || !profissao) return showToast('Nome e Profissão são obrigatórios.', 'error');
+      const prof = {
+        nome, profissao,
+        telefone: document.getElementById('prof-telefone').value.trim(),
+        email: document.getElementById('prof-email').value.trim(),
+        documento: document.getElementById('prof-documento').value.trim(),
+        endereco: {
+          cep: document.getElementById('prof-cep').value.trim(),
+          logradouro: document.getElementById('prof-logradouro').value.trim(),
+          numero: document.getElementById('prof-numero').value.trim(),
+          complemento: document.getElementById('prof-complemento').value.trim(),
+          bairro: document.getElementById('prof-bairro').value.trim(),
+          cidade: document.getElementById('prof-cidade').value.trim(),
+          uf: document.getElementById('prof-uf').value.trim()
+        },
+        observacoes: document.getElementById('prof-observacoes').value.trim(),
+        treinamentos: []
+      };
+      state.profissionais.push(prof);
+      if (currentProfile) {
+        try {
+          const saved = await window.BelfortSupabase.insertProfissional(currentProfile, prof);
+          prof.id = saved.id;
+        } catch (error) {
+          return showToast(error.message || 'Erro ao salvar profissional no banco.', 'error');
+        }
+      }
+      ['prof-nome', 'prof-profissao', 'prof-telefone', 'prof-email', 'prof-documento', 'prof-cep', 'prof-logradouro', 'prof-numero', 'prof-complemento', 'prof-bairro', 'prof-cidade', 'prof-uf', 'prof-observacoes'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      updateProfCount();
+      showToast('Profissional cadastrado com sucesso!', 'success');
+      addNotification('Profissional', `Novo profissional cadastrado: ${nome}`, 'profissionais-lista');
+    }
+
+    function resetProfissionalForm() {
+      ['prof-nome', 'prof-profissao', 'prof-telefone', 'prof-email', 'prof-documento', 'prof-cep', 'prof-logradouro', 'prof-numero', 'prof-complemento', 'prof-bairro', 'prof-cidade', 'prof-uf', 'prof-observacoes'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      clearFieldErrors([document.getElementById('prof-nome'), document.getElementById('prof-profissao')]);
+      showToast('Formulário limpo.', 'success');
+    }
+
+    function renderProfissionaisList() {
+      const container = document.getElementById('profissionais-list');
+      if (!state.profissionais.length) { container.innerHTML = '<p class="stat-sub">Nenhum profissional cadastrado.</p>'; updateProfListaStats(); return; }
+      container.innerHTML = state.profissionais.map((prof, idx) => {
+        return `
+    <div class="accordion-item">
+      <button class="accordion-toggle" onclick="toggleProfissionalDetails(${idx})">
+        <span>${prof.nome} — <em style="font-size:12px;color:var(--txt-muted)">${prof.profissao}</em></span>
+        <span style="font-size:12px;color:var(--txt-muted)">${prof.treinamentos ? prof.treinamentos.length : 0} treinamento(s)</span>
+      </button>
+      <div class="accordion-content" id="prof-detail-${idx}" style="display:none">
+        <div class="accordion-content-inner">
+          <p><strong>Profissão:</strong> ${prof.profissao}</p>
+          <p><strong>Contato:</strong> ${prof.telefone || 'Não informado'} — ${prof.email || 'Não informado'}</p>
+          <p><strong>Documento:</strong> ${prof.documento || 'Não informado'}</p>
+          ${prof.endereco && prof.endereco.logradouro ? `<p><strong>Endereço:</strong> ${prof.endereco.logradouro}, ${prof.endereco.numero} — ${prof.endereco.bairro}, ${prof.endereco.cidade} - ${prof.endereco.uf} (${prof.endereco.cep})</p>` : ''}
+          ${prof.observacoes ? `<p><strong>Observações:</strong> ${prof.observacoes}</p>` : ''}
+          <hr style="border-color:var(--border);margin:12px 0">
+          <h4 style="margin-bottom:8px;color:var(--txt-main)">Treinamentos Atribuídos</h4>
+          <div id="treinamentos-lista-${idx}">
+            ${prof.treinamentos && prof.treinamentos.length ? prof.treinamentos.map((t, ti) => `
+              <div class="training-item" style="margin-bottom:8px;padding:8px;border:1px solid var(--border);border-radius:var(--r-md)">
+                <strong>${t.nome}</strong> <span class="training-type ${t.tipo}">${t.tipo === 'tecnico' ? 'Técnico' : 'Segurança'}</span><br>
+                <small style="color:var(--txt-muted)">Data: ${t.data} | ${t.observacoes || ''}</small>
+              </div>
+            `).join('') : '<p class="stat-sub">Nenhum treinamento atribuído.</p>'}
+          </div>
+          <hr style="border-color:var(--border);margin:12px 0">
+          <h4 style="margin-bottom:8px;color:var(--txt-main)">Atribuir Novo Treinamento</h4>
+          <div class="form-row">
+            <div class="field">
+              <label class="field-label">Nome do Treinamento</label>
+              <input type="text" class="field-input" id="treinamento-nome-${idx}" placeholder="Ex: NR-10, NR-35...">
+            </div>
+            <div class="field">
+              <label class="field-label">Tipo</label>
+              <select class="field-input" id="treinamento-tipo-${idx}">
+                <option value="tecnico">Técnico</option>
+                <option value="seguranca">Segurança</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field">
+              <label class="field-label">Data</label>
+              <input type="date" class="field-input" id="treinamento-data-${idx}">
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label">Observações</label>
+            <textarea class="field-input" id="treinamento-obs-${idx}" rows="2" placeholder="Observações sobre o treinamento"></textarea>
+          </div>
+          <button class="btn-primary" onclick="atribuirTreinamento(${idx})">Atribuir Treinamento</button>
+        </div>
+      </div>
+    </div>`;
+      }).join('');
+      updateProfListaStats();
+    }
+
+    function toggleProfissionalDetails(idx) {
+      const el = document.getElementById('prof-detail-' + idx);
+      el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+
+    async function atribuirTreinamento(idx) {
+      const nome = document.getElementById('treinamento-nome-' + idx).value.trim();
+      const tipo = document.getElementById('treinamento-tipo-' + idx).value;
+      const data = document.getElementById('treinamento-data-' + idx).value;
+      const obs = document.getElementById('treinamento-obs-' + idx).value.trim();
+      if (!nome) return showToast('Informe o nome do treinamento.', 'error');
+      if (!state.profissionais[idx].treinamentos) state.profissionais[idx].treinamentos = [];
+      const treinamento = { nome, tipo, data, observacoes: obs };
+      state.profissionais[idx].treinamentos.push(treinamento);
+      if (currentProfile) {
+        try {
+          const saved = await window.BelfortSupabase.insertTreinamento(currentProfile, state.profissionais[idx], treinamento);
+          state.profissionais[idx].id = state.profissionais[idx].id || saved.profissional_id;
+        } catch (error) {
+          state.profissionais[idx].treinamentos.pop();
+          return showToast(error.message || 'Erro ao salvar treinamento no banco.', 'error');
+        }
+      }
+      renderProfissionaisList();
+      showToast('Treinamento atribuído com sucesso!', 'success');
+    }
+
+    // ========== NOVAS FUNÇÕES: CND Mensal ==========
+    const mesesNomes = ['', 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+    function renderCndTable() {
+      const container = document.getElementById('cnd-table');
+      const ano = state.cnd.ano;
+      container.innerHTML = `
+    <div style="margin-bottom:8px;color:var(--txt-sub);font-size:14px">Ano: ${ano}</div>
+    <table class="cnd-table-inner">
+      <thead><tr><th>Mês</th><th>Valor Pago</th><th>Status</th></tr></thead>
+      <tbody>
+        ${Object.keys(state.cnd.meses).map(m => {
+        const mes = parseInt(m);
+        const valor = state.cnd.meses[mes] || 0;
+        const pago = valor > 0;
+        return `<tr class="cnd-row">
+            <td class="cnd-month">${mesesNomes[mes]}</td>
+            <td><input type="text" class="cnd-input" data-month="${mes}" value="${valor > 0 ? 'R$ ' + valor.toFixed(2).replace('.', ',') : ''}" placeholder="R$ 0,00" inputmode="numeric" onchange="updateCndMonth(${mes}, this.value)"></td>
+            <td><span class="cnd-status ${pago ? 'paid' : 'pending'}">${pago ? 'Pago' : 'Pendente'}</span></td>
+          </tr>`;
+      }).join('')}
+      </tbody>
+    </table>`;
+      updateCndTotal();
+    }
+
+    async function updateCndMonth(month, value) {
+      const parseValor = (v) => parseFloat((v || '0').replace(/[^\d,]/g, '').replace(',', '.')) || 0;
+      const previousValue = state.cnd.meses[month];
+      const nextValue = parseValor(value);
+      state.cnd.meses[month] = nextValue;
+      if (currentProfile) {
+        try {
+          await window.BelfortSupabase.upsertCnd(currentProfile, state.cnd.ano, month, nextValue);
+        } catch (error) {
+          state.cnd.meses[month] = previousValue;
+          renderCndTable();
+          return showToast(error.message || 'Erro ao salvar CND no banco.', 'error');
+        }
+      }
+      updateCndTotal();
+      const row = document.querySelector(`.cnd-input[data-month="${month}"]`).closest('.cnd-row');
+      const statusEl = row.querySelector('.cnd-status');
+      if (state.cnd.meses[month] > 0) {
+        statusEl.textContent = 'Pago';
+        statusEl.className = 'cnd-status paid';
+      } else {
+        statusEl.textContent = 'Pendente';
+        statusEl.className = 'cnd-status pending';
+      }
+    }
+
+    function updateCndTotal() {
+      const total = Object.values(state.cnd.meses).reduce((a, b) => a + b, 0);
+      document.getElementById('cnd-total').textContent = `Total Pago em ${state.cnd.ano}: R$ ${total.toFixed(2).replace('.', ',')}`;
+    }
+
+    // ========== NOVAS FUNÇÕES: Equipamentos ==========
+    async function persistEquipmentStock(eq) {
+      return persistEquipamento(eq);
+    }
+
+    function renderEquipamentos() {
+      const container = document.getElementById('equipamentos-lista');
+      if (!state.equipamentos.length) { container.innerHTML = '<p class="stat-sub">Nenhum equipamento cadastrado.</p>'; updateEquipStats(); return; }
+      container.innerHTML = state.equipamentos.map((eq, idx) => {
+        const disponivel = eq.total - eq.emUso;
+        return `
+    <div class="file-item estoque-item" data-name="${eq.nome}">
+      <div class="file-info">
+        <span class="file-name">${eq.nome}</span>
+        <div class="file-size">
+          <span>Total:</span>
+          <button onclick="updateEquipField(${idx},'total',-1)" style="background:none;border:1px solid var(--border);color:var(--txt-main);width:24px;height:24px;border-radius:4px;cursor:pointer">-</button>
+          <input type="number" value="${eq.total}" min="0" style="width:50px;text-align:center;background:var(--g750);border:1px solid var(--border);color:var(--txt-main);border-radius:4px" onchange="setEquipField(${idx},'total',this.value)">
+          <button onclick="updateEquipField(${idx},'total',1)" style="background:none;border:1px solid var(--border);color:var(--txt-main);width:24px;height:24px;border-radius:4px;cursor:pointer">+</button>
+          <span>| Em Uso:</span>
+          <button onclick="updateEquipField(${idx},'emUso',-1)" style="background:none;border:1px solid var(--border);color:var(--txt-main);width:24px;height:24px;border-radius:4px;cursor:pointer">-</button>
+          <input type="number" value="${eq.emUso}" min="0" style="width:50px;text-align:center;background:var(--g750);border:1px solid var(--border);color:var(--txt-main);border-radius:4px" onchange="setEquipField(${idx},'emUso',this.value)">
+          <button onclick="updateEquipField(${idx},'emUso',1)" style="background:none;border:1px solid var(--border);color:var(--txt-main);width:24px;height:24px;border-radius:4px;cursor:pointer">+</button>
+          <span>| Disponível: <strong>${disponivel}</strong></span>
+        </div>
+      </div>
+      <button class="epi-remove-btn" onclick="removeEquipamento(${idx})" title="Excluir" aria-label="Excluir ${eq.nome}" style="background:none;border:none;color:var(--o400);cursor:pointer;font-size:18px">&times;</button>
+    </div>`;
+      }).join('');
+      updateEquipStats();
+    }
+
+    function clampEquipamentoItem(eq) {
+      eq.total = Math.max(0, parseInt(eq.total, 10) || 0);
+      eq.emUso = Math.max(0, parseInt(eq.emUso, 10) || 0);
+      if (eq.emUso > eq.total) eq.emUso = eq.total;
+    }
+
+    async function updateEquipField(idx, field, delta) {
+      const eq = state.equipamentos[idx];
+      const previous = { total: eq.total, emUso: eq.emUso };
+      eq[field] = Math.max(0, eq[field] + delta);
+      clampEquipamentoItem(eq);
+      if (!(await persistEquipmentStock(eq))) {
+        eq.total = previous.total;
+        eq.emUso = previous.emUso;
+      }
+      renderEquipamentos();
+    }
+
+    async function setEquipField(idx, field, value) {
+      const eq = state.equipamentos[idx];
+      const previous = { total: eq.total, emUso: eq.emUso };
+      eq[field] = Math.max(0, parseInt(value, 10) || 0);
+      clampEquipamentoItem(eq);
+      if (!(await persistEquipmentStock(eq))) {
+        eq.total = previous.total;
+        eq.emUso = previous.emUso;
+      }
+      renderEquipamentos();
+    }
+
+    async function removeEquipamento(idx) {
+      const item = state.equipamentos[idx];
+      const nome = item.nome;
+      if (!confirm(`Excluir "${nome}" do estoque?`)) return;
+      if (item.id && currentProfile) {
+        try {
+          await window.BelfortSupabase.removeEquipamento(currentProfile, item);
+        } catch (error) {
+          return showToast(error.message || 'Erro ao remover equipamento no banco.', 'error');
+        }
+      }
+      state.equipamentos.splice(idx, 1);
+      renderEquipamentos();
+      showToast(`"${nome}" removido.`, 'success');
+    }
+
+    function openEquipModal() {
+      document.getElementById('equip-modal').classList.add('open');
+      document.getElementById('new-equip-input').value = '';
+      document.getElementById('new-equip-input').focus();
+    }
+
+    function closeEquipModal() {
+      document.getElementById('equip-modal').classList.remove('open');
+    }
+
+    async function confirmAddEquip() {
+      const v = normalizeEpiName(document.getElementById('new-equip-input').value);
+      if (!v) return showToast('Informe o nome do equipamento.', 'error');
+      if (state.equipamentos.find(e => e.nome.toLowerCase() === v.toLowerCase())) return showToast('Equipamento já cadastrado.', 'error');
+      const item = { nome: v, total: 0, emUso: 0 };
+      if (!(await persistEquipamento(item))) return;
+      state.equipamentos.push(item);
+      renderEquipamentos();
+      closeEquipModal();
+      showToast('"' + v + '" adicionado com sucesso!', 'success');
+    }
+
+    // ========== FUNÇÕES DE ATUALIZAÇÃO DE STATS ==========
+    function updatePagamentoObrasStats() {
+      document.getElementById('pag-obras-count').textContent = state.obras.length;
+      const total = state.obras.reduce((s, o) => s + (parseFloat((o.valor || '0').replace(/[^\d,]/g, '').replace(',', '.')) || 0), 0);
+      document.getElementById('pag-obras-total').textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
+      const pagos = state.obras.filter(o => o.pagamento && (o.pagamento.tipo === 'vista' || o.pagamento.tipo === 'parcelado')).length;
+      document.getElementById('pag-obras-pagos').textContent = pagos;
+    }
+
+    function updateClientesListaStats() {
+      document.getElementById('cli-lista-count').textContent = state.clientes.length;
+      const obrasCount = state.obras.length;
+      document.getElementById('cli-lista-obras').textContent = obrasCount;
+      const artPendentes = state.clientes.filter(c => !c.art || !c.art.pagamento).length;
+      document.getElementById('cli-lista-art-pend').textContent = artPendentes;
+    }
+
+    function updateProfCount() {
+      document.getElementById('prof-count').textContent = state.profissionais.length;
+      const tecnicos = state.profissionais.filter(p => p.profissao.toLowerCase().includes('tecnico')).length;
+      const seguranca = state.profissionais.filter(p => p.profissao.toLowerCase().includes('seguranca') || p.profissao.toLowerCase().includes('segurança')).length;
+      document.getElementById('prof-tecnicos').textContent = tecnicos;
+      document.getElementById('prof-seguranca').textContent = seguranca || state.profissionais.length - tecnicos;
+    }
+
+    function updateProfListaStats() {
+      document.getElementById('profl-lista-count').textContent = state.profissionais.length;
+      const treinamentos = state.profissionais.reduce((s, p) => s + (p.treinamentos ? p.treinamentos.length : 0), 0);
+      document.getElementById('profl-treinamentos').textContent = treinamentos;
+      const pendentes = state.profissionais.filter(p => !p.treinamentos || p.treinamentos.length === 0).length;
+      document.getElementById('profl-pendentes').textContent = pendentes;
+    }
+
+    function updateEquipStats() {
+      const total = state.equipamentos.reduce((s, e) => s + e.total, 0);
+      const emUso = state.equipamentos.reduce((s, e) => s + e.emUso, 0);
+      if (document.getElementById('equip-total')) {
+        document.getElementById('equip-total').textContent = total;
+        document.getElementById('equip-em-uso').textContent = emUso;
+        document.getElementById('equip-disponivel').textContent = total - emUso;
+      }
+    }
+
+    // ========== INTERCEPTAR showPage PARA RENDERIZAR NOVAS ABAS ==========
+    const originalShowPage = showPage;
+    window.showPage = function (id) {
+      originalShowPage(id);
+      if (id === 'pagamento-obras') renderPagamentoObrasList();
+      if (id === 'clientes-lista') renderClientesLista();
+      if (id === 'profissionais-lista') renderProfissionaisList();
+      if (id === 'documentos-gerais') renderCndTable();
+      if (id === 'equipamentos') renderEquipamentos();
+    };
+
+    // ========== AUTENTICAÇÃO SUPABASE ==========
+    document.querySelectorAll('[data-auth-mode]').forEach(button => {
+      button.addEventListener('click', () => showAuthPanel(button.dataset.authMode));
+    });
+
+    document.getElementById('auth-register-panel').addEventListener('submit', async event => {
+      event.preventDefault();
+      const fullName = document.getElementById('auth-register-name').value.trim();
+      const email = document.getElementById('auth-register-email').value.trim();
+      const recoveryPassword = document.getElementById('auth-register-password').value;
+      const securityCode = window.BelfortAuthUtils.generateSecurityCode();
+      if (!fullName || !email || recoveryPassword.length < 6) {
+        setAuthMessage('Preencha nome, email e senha com pelo menos 6 caracteres.', 'error');
+        return;
+      }
+      try {
+        setAuthMessage('Criando usuário...', '');
+        const data = await window.BelfortSupabase.signUpWithSecurityCode({ fullName, email, recoveryPassword, securityCode });
+        document.getElementById('auth-generated-code').textContent = securityCode;
+        showAuthPanel('code');
+        if (!data.session) setAuthMessage('Código gerado. Se o Supabase pedir confirmação, confirme seu email antes de entrar.', 'success');
+      } catch (error) {
+        setAuthMessage(error.message || 'Erro ao cadastrar usuário.', 'error');
+      }
+    });
+
+    document.getElementById('auth-login-panel').addEventListener('submit', async event => {
+      event.preventDefault();
+      const email = document.getElementById('auth-login-email').value.trim();
+      const securityCode = document.getElementById('auth-login-code').value.trim();
+      try {
+        setAuthMessage('Entrando...', '');
+        await window.BelfortSupabase.signInWithSecurityCode({ email, securityCode });
+        currentProfile = await window.BelfortSupabase.getProfile();
+        await window.BelfortSupabase.saveSecurityCodeForCurrentUser(securityCode);
+        await loadDataFromSupabase();
+        showDashboard();
+      } catch (error) {
+        setAuthMessage('Usuário ou código de segurança inválido.', 'error');
+      }
+    });
+
+    document.getElementById('auth-copy-code').addEventListener('click', async () => {
+      const code = document.getElementById('auth-generated-code').textContent.trim();
+      await navigator.clipboard.writeText(code);
+      setAuthMessage('Código copiado.', 'success');
+    });
+
+    // ========== EVENT LISTENERS PARA NOVAS ABAS ==========
+    document.getElementById('btn-save-profissional').addEventListener('click', saveProfissional);
+    document.getElementById('btn-reset-profissional').addEventListener('click', resetProfissionalForm);
+
+    document.getElementById('prof-telefone').addEventListener('input', e => { e.target.value = formatPhone(e.target.value); });
+    document.getElementById('prof-documento').addEventListener('input', e => { e.target.value = sanitizeDigits(e.target.value); });
+    document.getElementById('prof-cep').addEventListener('input', e => { e.target.value = formatCep(e.target.value); });
+    document.getElementById('prof-uf').addEventListener('input', e => { e.target.value = e.target.value.replace(/[^a-zA-Z]/g, '').toUpperCase().slice(0, 2); });
+
+    document.getElementById('obra-cep').addEventListener('input', e => { e.target.value = formatCep(e.target.value); });
+    document.getElementById('obra-uf').addEventListener('input', e => { e.target.value = e.target.value.replace(/[^a-zA-Z]/g, '').toUpperCase().slice(0, 2); });
+
+    document.getElementById('equip-modal').addEventListener('click', function (e) { if (e.target === this) closeEquipModal(); });
+    document.getElementById('new-equip-input').addEventListener('keydown', e => { if (e.key === 'Enter') confirmAddEquip(); });
+
+    // ========== INICIALIZAÇÃO ==========
+    renderNotifications();
+    renderEstoque();
+    updateEpiRegistradosCount();
+    setupCustomDocumentSelect();
+    applyDocType('CPF');
+    updateClienteCards();
+    renderClientesList();
+    renderObrasDoCliente();
+    updateObraOptions();
+    updateProfCount();
+    updateEquipStats();
+    bootAuth();
+
+  
